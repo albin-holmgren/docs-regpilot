@@ -1,0 +1,121 @@
+---
+title: "API Keys Management"
+description: "Create, manage, and secure your RegPilot AI Gateway API keys"
+---
+
+## API Keys Management
+
+API keys authenticate your requests to the RegPilot AI Gateway. Each key is associated with a project and can be configured with specific permissions and rate limits.
+
+## Creating API Keys
+
+<Steps>
+  <Step title="Navigate to AI Gateway">
+    Go to your project and select **AI Gateway → Overview**
+  </Step>
+
+  <Step title="Click Manage Keys">
+    Open the API keys management panel
+  </Step>
+
+  <Step title="Create New Key">
+    ```typescript
+    const key = await regpilot.gateway.keys.create({
+      name: "Production API Key",
+      environment: "production",
+      rate_limit: 1000, // requests per minute
+      governor_enabled: true
+    });
+    
+    // Save this immediately - shown only once!
+    console.log(key.secret); // sk_...
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  **Save your API key immediately!** It's only shown once at creation. If you lose it, you'll need to generate a new one.
+</Warning>
+
+## Key Types
+
+### Gateway Keys (sk_)
+- AI Gateway API requests
+- Chat completions, embeddings
+- Governor validation
+- Usage tracking
+
+### Project Keys (pk_)
+- Compliance management APIs
+- Violations, models, policies
+- Read-only dashboard access
+
+## Key Permissions
+
+Configure what each key can access:
+
+```typescript
+await regpilot.gateway.keys.update(key.id, {
+  permissions: {
+    chat: true,
+    embeddings: true,
+    governor: true,
+    models: ["gpt-4", "gpt-3.5-turbo"],
+    max_tokens: 4000
+  }
+});
+```
+
+## Key Status
+
+### Active
+- Key is valid and can be used
+- All features enabled
+
+### Inactive
+- Key temporarily disabled
+- Returns 401 errors
+- Can be reactivated
+
+### Revoked
+- Permanently disabled
+- Cannot be reactivated
+- Create new key instead
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="shield">
+    Store keys in env vars, never in code
+  </Card>
+  <Card title="Rotate Regularly" icon="rotate">
+    Change keys every 90 days
+  </Card>
+  <Card title="Least Privilege" icon="lock">
+    Only grant needed permissions
+  </Card>
+  <Card title="Monitor Usage" icon="eye">
+    Watch for unusual patterns
+  </Card>
+</CardGroup>
+
+## Rate Limits
+
+Keys have rate limits based on your plan:
+
+| Plan | Requests/Min | Tokens/Day |
+|------|-------------|------------|
+| Free | 10 | 100,000 |
+| Pro | 100 | 1,000,000 |
+| Enterprise | Custom | Custom |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how to use API keys
+  </Card>
+  <Card title="Governor" icon="crown" href="/ai-gateway/governor">
+    Enable advanced validation
+  </Card>
+</CardGroup>

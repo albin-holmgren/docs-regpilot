@@ -1,0 +1,178 @@
+---
+title: "Analytics Dashboard"
+description: "Comprehensive analytics for AI usage, compliance trends, and performance metrics"
+---
+
+## Analytics Dashboard
+
+Get deep insights into your AI systems with comprehensive analytics covering usage, costs, compliance trends, bias detection, and performance metrics.
+
+## Key Metrics
+
+<CardGroup cols={3}>
+  <Card title="Usage" icon="chart-line">
+    API calls, tokens, and request patterns
+  </Card>
+  <Card title="Costs" icon="dollar-sign">
+    AI provider costs and budget tracking
+  </Card>
+  <Card title="Compliance" icon="shield">
+    Scores, violations, and trends over time
+  </Card>
+  <Card title="Performance" icon="gauge">
+    Response times, success rates, errors
+  </Card>
+  <Card title="Bias Detection" icon="balance-scale">
+    Fairness metrics and bias indicators
+  </Card>
+  <Card title="Risk Assessment" icon="triangle-exclamation">
+    Risk scores and Governor validations
+  </Card>
+</CardGroup>
+
+## Usage Analytics
+
+### API Gateway Metrics
+
+Track all AI requests through RegPilot Gateway:
+
+- **Total Requests**: Requests per day/week/month
+- **Tokens Used**: Input and output tokens
+- **Model Distribution**: Usage by AI model (GPT-4, Claude, etc.)
+- **Response Times**: Average, P50, P95, P99 latency
+- **Success Rates**: Successful vs failed requests
+- **Error Types**: Breakdown of error causes
+
+### Cost Tracking
+
+Monitor AI spending:
+
+```typescript
+{
+  "period": "2024-01",
+  "total_cost": 1247.32,
+  "breakdown": {
+    "gpt-4": 892.15,
+    "gpt-3.5-turbo": 245.87,
+    "claude-3-opus": 109.30
+  },
+  "budget": 2000.00,
+  "usage_percent": 62.4
+}
+```
+
+## Compliance Analytics
+
+### Compliance Trends
+
+View compliance score changes over time:
+
+- Daily/weekly/monthly compliance scores
+- Violations by type and severity
+- Framework-specific compliance (EU AI Act, GDPR)
+- Resolution rates and times
+
+### Bias Detection
+
+Advanced fairness metrics:
+
+<AccordionGroup>
+  <Accordion title="Demographic Parity" icon="users">
+    Measures whether predictions are independent of protected attributes
+  </Accordion>
+  <Accordion title="Equal Opportunity" icon="balance-scale">
+    Checks if true positive rates are equal across groups
+  </Accordion>
+  <Accordion title="Calibration" icon="crosshairs">
+    Ensures predicted probabilities match actual outcomes
+  </Accordion>
+  <Accordion title="Individual Fairness" icon="user-check">
+    Similar individuals receive similar predictions
+  </Accordion>
+</AccordionGroup>
+
+## Performance Analytics
+
+### Response Time Distribution
+
+Monitor AI response performance:
+
+- P50 (median): Typical response time
+- P95: 95% of requests faster than this
+- P99: 99% of requests faster than this
+- Max response time
+- Timeout rate
+
+### Model Performance
+
+Track model accuracy and reliability:
+
+- Success rate by model
+- Error rates and types
+- Retry patterns
+- Governor validation rates
+
+## Custom Reports
+
+Create custom analytics reports:
+
+<Steps>
+  <Step title="Select Metrics">
+    Choose which data points to include
+  </Step>
+  <Step title="Set Filters">
+    Filter by project, model, date range, etc.
+  </Step>
+  <Step title="Choose Visualization">
+    Select chart types (line, bar, pie, table)
+  </Step>
+  <Step title="Schedule & Export">
+    Email reports or export as PDF/CSV
+  </Step>
+</Steps>
+
+## API Access
+
+Access analytics programmatically:
+
+```typescript
+// Get usage analytics
+const usage = await regpilot.analytics.usage({
+  startDate: '2024-01-01',
+  endDate: '2024-01-31',
+  groupBy: 'day'
+});
+
+// Get compliance trends
+const compliance = await regpilot.analytics.compliance({
+  framework: 'eu_ai_act',
+  period: 'last_30_days'
+});
+
+// Get cost breakdown
+const costs = await regpilot.analytics.costs({
+  currency: 'USD',
+  groupBy: 'model'
+});
+```
+
+## Alerts & Notifications
+
+Set up analytics-based alerts:
+
+- Budget threshold exceeded
+- Unusual usage patterns
+- Performance degradation
+- Compliance score drops
+- High error rates
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Alerts" icon="bell" href="/features/alerts">
+    Configure alert thresholds
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Access analytics via API
+  </Card>
+</CardGroup>

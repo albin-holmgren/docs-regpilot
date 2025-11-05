@@ -1,0 +1,209 @@
+---
+title: "Compliance Alerts"
+description: "Real-time notifications for compliance violations, policy triggers, and system events"
+---
+
+## Compliance Alerts
+
+Get instant notifications when compliance issues arise, policies are violated, or important system events occur.
+
+## Alert Types
+
+<CardGroup cols={2}>
+  <Card title="Violation Alerts" icon="triangle-exclamation">
+    Immediate notification when compliance violations are detected
+  </Card>
+  <Card title="Policy Triggers" icon="shield">
+    Alerts when custom policies are activated
+  </Card>
+  <Card title="Threshold Alerts" icon="gauge">
+    Notifications when metrics exceed configured limits
+  </Card>
+  <Card title="System Events" icon="bell">
+    Important system status and health notifications
+  </Card>
+</CardGroup>
+
+## Configuring Alerts
+
+<Steps>
+  <Step title="Choose Alert Type">
+    Select what you want to be notified about
+  </Step>
+
+  <Step title="Set Conditions">
+    ```typescript
+    const alert = await regpilot.alerts.create({
+      name: "High-Risk Violations",
+      type: "violation",
+      conditions: {
+        severity: ["critical", "high"],
+        framework: "eu_ai_act"
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Configure Channels">
+    ```typescript
+    await regpilot.alerts.addChannel(alert.id, {
+      type: "email",
+      recipients: ["compliance@company.com"],
+      priority: "high"
+    });
+    ```
+  </Step>
+
+  <Step title="Test Alert">
+    ```typescript
+    await regpilot.alerts.test(alert.id);
+    ```
+  </Step>
+</Steps>
+
+## Alert Channels
+
+### Email
+- Individual recipients
+- Distribution lists
+- Priority levels
+- Custom templates
+
+### Slack
+- Channel notifications
+- Direct messages
+- Thread replies
+- Rich formatting
+
+### Webhook
+- POST to custom URL
+- Custom payload format
+- Retry logic
+- Authentication
+
+### SMS
+- Critical alerts only
+- Phone number list
+- Rate limiting
+
+## Alert Conditions
+
+### Violation-Based
+
+```typescript
+{
+  "type": "violation",
+  "severity": ["critical", "high"],
+  "framework": "eu_ai_act",
+  "auto_resolve": false
+}
+```
+
+### Metric-Based
+
+```typescript
+{
+  "type": "threshold",
+  "metric": "compliance_score",
+  "operator": "less_than",
+  "value": 70,
+  "duration": "5m"
+}
+```
+
+### Policy-Based
+
+```typescript
+{
+  "type": "policy",
+  "policy_ids": ["pol_123", "pol_456"],
+  "action": "block"
+}
+```
+
+## Alert Priority
+
+<Tabs>
+  <Tab title="Critical">
+    - Immediate delivery
+    - Multiple channels
+    - On-call notification
+    - SMS + Email + Slack
+  </Tab>
+  <Tab title="High">
+    - Within 5 minutes
+    - Email + Slack
+    - Business hours priority
+  </Tab>
+  <Tab title="Medium">
+    - Within 30 minutes
+    - Email notification
+    - Daily digest option
+  </Tab>
+  <Tab title="Low">
+    - Daily digest
+    - Email only
+    - Batch notifications
+  </Tab>
+</Tabs>
+
+## Managing Alerts
+
+### Mute Alerts
+
+Temporarily silence alerts:
+
+```typescript
+await regpilot.alerts.mute(alert.id, {
+  duration: "2h",
+  reason: "Planned maintenance"
+});
+```
+
+### Alert History
+
+View past alerts:
+
+```typescript
+const history = await regpilot.alerts.getHistory({
+  startDate: "2024-01-01",
+  status: ["triggered", "resolved"],
+  limit: 50
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Avoid Alert Fatigue" icon="volume-off">
+    - Set appropriate thresholds
+    - Use severity levels wisely
+    - Batch low-priority alerts
+    - Review and tune regularly
+  </Accordion>
+
+  <Accordion title="Response Playbooks" icon="book">
+    - Document alert response procedures
+    - Assign clear ownership
+    - Define escalation paths
+    - Track response times
+  </Accordion>
+
+  <Accordion title="Test Regularly" icon="flask">
+    - Test alert delivery monthly
+    - Verify all channels work
+    - Check recipient lists
+    - Update as needed
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Violations" icon="list" href="/features/violations-tracking">
+    View compliance violations
+  </Card>
+  <Card title="Policies" icon="shield" href="/features/policies">
+    Configure compliance policies
+  </Card>
+</CardGroup>

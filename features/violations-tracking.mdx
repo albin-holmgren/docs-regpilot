@@ -1,0 +1,110 @@
+---
+title: "Violations Tracking"
+description: "Track, manage, and resolve compliance violations in real-time"
+---
+
+## Violations Tracking
+
+RegPilot automatically detects and tracks compliance violations across your AI systems, providing real-time alerts and actionable remediation guidance.
+
+## Violation Severity Levels
+
+<Tabs>
+  <Tab title="Critical">
+    **Immediate action required**
+    - Prohibited AI practices (EU AI Act)
+    - Major GDPR violations
+    - High-risk system failures
+    - Penalty: Up to €35M or 7% of turnover
+  </Tab>
+  <Tab title="High">
+    **Action required within 24 hours**
+    - High-risk system non-compliance
+    - Data protection breaches
+    - Missing technical documentation
+    - Penalty: Up to €15M or 3% of turnover
+  </Tab>
+  <Tab title="Medium">
+    **Action required within 7 days**
+    - Transparency obligation failures
+    - Incomplete documentation
+    - Policy violations
+  </Tab>
+  <Tab title="Low">
+    **Action recommended**
+    - Minor documentation issues
+    - Best practice violations
+    - Optimization opportunities
+  </Tab>
+</Tabs>
+
+## Violation Types
+
+### Data Privacy Violations
+- Personal data exposure
+- Lack of consent
+- Improper data retention
+- Cross-border transfer issues
+
+### Bias & Discrimination
+- Discriminatory outputs
+- Biased training data
+- Unfair treatment detection
+- Protected class violations
+
+### Transparency Issues
+- Lack of AI disclosure
+- Missing explainability
+- Unclear decision logic
+- User notification failures
+
+### Technical Compliance
+- Missing documentation
+- Inadequate testing
+- Poor model governance
+- Logging failures
+
+## Managing Violations
+
+### View Violations
+
+```bash
+GET /api/compliance/violations?status=active&severity=high
+```
+
+### Resolve Violation
+
+<Steps>
+  <Step title="Review Details">
+    Examine the violation details, affected systems, and evidence
+  </Step>
+  <Step title="Implement Fix">
+    Apply the recommended remediation steps
+  </Step>
+  <Step title="Document Resolution">
+    Add notes and evidence of the fix
+  </Step>
+  <Step title="Mark as Resolved">
+    Close the violation once verified
+  </Step>
+</Steps>
+
+## Automated Detection
+
+Violations are detected through:
+- AI Gateway request monitoring
+- Governor validation checks
+- Scheduled compliance scans
+- Model performance monitoring
+- User-reported issues
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Policies" icon="shield" href="/features/policies">
+    Define custom violation rules
+  </Card>
+  <Card title="Alerts" icon="bell" href="/features/alerts">
+    Set up violation notifications
+  </Card>
+</CardGroup>

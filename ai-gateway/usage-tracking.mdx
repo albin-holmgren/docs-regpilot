@@ -1,0 +1,129 @@
+---
+title: "Usage Tracking & Analytics"
+description: "Monitor AI usage, costs, and performance through the RegPilot AI Gateway"
+---
+
+## Usage Tracking
+
+Track all AI requests, costs, and performance metrics through RegPilot's AI Gateway analytics dashboard.
+
+## What's Tracked
+
+<CardGroup cols={3}>
+  <Card title="Requests" icon="chart-line">
+    Total API calls and patterns
+  </Card>
+  <Card title="Tokens" icon="hashtag">
+    Input and output token usage
+  </Card>
+  <Card title="Costs" icon="dollar-sign">
+    AI provider spending
+  </Card>
+  <Card title="Latency" icon="clock">
+    Response times and performance
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation">
+    Failed requests and reasons
+  </Card>
+  <Card title="Models" icon="microchip">
+    Usage by AI model
+  </Card>
+</CardGroup>
+
+## Real-Time Dashboard
+
+View live metrics:
+- **Requests per second**: Current throughput
+- **Active requests**: In-flight API calls
+- **Success rate**: Percentage of successful requests
+- **Average latency**: Mean response time
+- **Cost per hour**: Current spending rate
+
+## Cost Tracking
+
+### Cost Breakdown
+
+```json
+{
+  "period": "2024-01-05",
+  "total_cost": 127.45,
+  "by_model": {
+    "gpt-4-turbo": 89.30,
+    "gpt-3.5-turbo": 28.15,
+    "claude-3-opus": 10.00
+  },
+  "by_feature": {
+    "customer_support": 67.20,
+    "content_generation": 45.15,
+    "data_analysis": 15.10
+  }
+}
+```
+
+### Budget Alerts
+
+Set spending limits:
+
+```typescript
+await regpilot.usage.setBudget({
+  amount: 1000,
+  period: "monthly",
+  alert_thresholds: [50, 75, 90, 100],
+  actions: {
+    at_90: "notify_admins",
+    at_100: "disable_keys"
+  }
+});
+```
+
+## Usage Analytics API
+
+Access usage data programmatically:
+
+```typescript
+// Get usage for date range
+const usage = await regpilot.usage.get({
+  startDate: '2024-01-01',
+  endDate: '2024-01-31',
+  groupBy: 'day'
+});
+
+// Get costs breakdown
+const costs = await regpilot.usage.costs({
+  currency: 'USD',
+  groupBy: 'model'
+});
+
+// Get performance metrics
+const performance = await regpilot.usage.performance({
+  metric: 'latency',
+  aggregation: 'p95'
+});
+```
+
+## Exporting Data
+
+Export usage reports:
+
+<Tabs>
+  <Tab title="CSV">
+    Download raw data for analysis
+  </Tab>
+  <Tab title="PDF">
+    Executive summary report
+  </Tab>
+  <Tab title="API">
+    Programmatic access for custom reports
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Analytics" icon="chart-bar" href="/features/analytics">
+    Explore analytics dashboard
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/ai-gateway/chat">
+    View API documentation
+  </Card>
+</CardGroup>

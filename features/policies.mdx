@@ -1,0 +1,162 @@
+---
+title: "Compliance Policies"
+description: "Define and enforce custom compliance policies for your AI systems"
+---
+
+## Compliance Policies
+
+Create custom compliance policies to enforce your organization's specific requirements beyond standard regulatory frameworks.
+
+## What are Policies?
+
+Policies are rules that define:
+- What AI behaviors are allowed/prohibited
+- Data handling requirements
+- Approval workflows
+- Notification triggers
+- Automated remediation actions
+
+## Creating Policies
+
+<Steps>
+  <Step title="Define Policy">
+    ```typescript
+    const policy = await regpilot.policies.create({
+      name: "Customer Data Protection",
+      description: "Protect customer PII in AI interactions",
+      framework: "gdpr",
+      severity: "high"
+    });
+    ```
+  </Step>
+
+  <Step title="Add Rules">
+    ```typescript
+    await regpilot.policies.addRule(policy.id, {
+      type: "data_protection",
+      condition: {
+        contains: ["email", "phone", "ssn", "credit_card"]
+      },
+      action: "block",
+      message: "Personal data detected and blocked"
+    });
+    ```
+  </Step>
+
+  <Step title="Apply to Models">
+    ```typescript
+    await regpilot.policies.apply(policy.id, {
+      models: ["model_123", "model_456"],
+      projects: ["proj_abc"],
+      environment: "production"
+    });
+    ```
+  </Step>
+</Steps>
+
+## Policy Types
+
+### Data Protection
+- PII detection and blocking
+- Data retention limits
+- Cross-border transfer restrictions
+- Consent requirements
+
+### Content Moderation
+- Harmful content detection
+- Profanity filtering
+- Misinformation prevention
+- Bias detection
+
+### Compliance Rules
+- Framework-specific requirements
+- Industry regulations
+- Company policies
+- Best practices
+
+### Approval Workflows
+- Human-in-the-loop requirements
+- Multi-level approvals
+- Risk-based routing
+- Emergency overrides
+
+## Rule Conditions
+
+Define when policies apply:
+
+```typescript
+{
+  "conditions": {
+    "and": [
+      {
+        "field": "input.content",
+        "operator": "contains",
+        "value": ["personal", "confidential"]
+      },
+      {
+        "field": "user.role",
+        "operator": "not_equals",
+        "value": "admin"
+      }
+    ]
+  }
+}
+```
+
+## Actions
+
+What happens when a policy is triggered:
+
+<Tabs>
+  <Tab title="Block">
+    Prevent the action and return error
+  </Tab>
+  <Tab title="Warn">
+    Allow but log a warning
+  </Tab>
+  <Tab title="Require Approval">
+    Queue for human review
+  </Tab>
+  <Tab title="Sanitize">
+    Modify content to comply
+  </Tab>
+  <Tab title="Notify">
+    Send alert and allow
+  </Tab>
+</Tabs>
+
+## Policy Management
+
+### Testing Policies
+
+Test before deploying:
+
+```typescript
+const testResult = await regpilot.policies.test(policy.id, {
+  input: "Please process this credit card: 4111-1111-1111-1111",
+  model: "model_123"
+});
+
+console.log(testResult.triggered); // true
+console.log(testResult.action); // "block"
+```
+
+### Policy Analytics
+
+Track policy effectiveness:
+
+- Trigger frequency
+- False positive rate
+- Response times
+- User impact
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Violations" icon="triangle-exclamation" href="/features/violations-tracking">
+    View policy violations
+  </Card>
+  <Card title="Alerts" icon="bell" href="/features/alerts">
+    Configure policy alerts
+  </Card>
+</CardGroup>

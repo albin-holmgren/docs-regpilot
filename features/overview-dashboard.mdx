@@ -1,0 +1,115 @@
+---
+title: "Overview Dashboard"
+description: "Real-time compliance monitoring and analytics dashboard for your AI systems"
+---
+
+## Overview Dashboard
+
+The RegPilot dashboard provides a comprehensive, real-time view of your AI compliance status, violations, and key metrics across all your projects.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Compliance Score" icon="shield-check">
+    Real-time compliance score across EU AI Act, GDPR, and custom frameworks
+  </Card>
+  <Card title="Violations Tracking" icon="triangle-exclamation">
+    Active violations with severity levels and resolution status
+  </Card>
+  <Card title="AI Model Registry" icon="microchip">
+    Overview of all registered AI models and their risk classifications
+  </Card>
+  <Card title="Usage Analytics" icon="chart-line">
+    AI Gateway usage, costs, and performance metrics
+  </Card>
+</CardGroup>
+
+## Dashboard Sections
+
+### Compliance Overview
+
+At the top of your dashboard, you'll see:
+
+- **Overall Compliance Score**: Percentage score (0-100) indicating compliance health
+- **Active Violations**: Count of current violations by severity (Critical, High, Medium, Low)
+- **Risk Status**: Current risk level of your AI systems
+- **Last Assessment**: Timestamp of most recent compliance check
+
+### Recent Violations
+
+View the latest compliance violations:
+
+```typescript
+{
+  "violation_id": "viol_abc123",
+  "severity": "high",
+  "type": "data_privacy",
+  "framework": "GDPR",
+  "detected_at": "2024-01-05T10:30:00Z",
+  "status": "pending_review"
+}
+```
+
+### AI Models Status
+
+Quick view of your registered AI models:
+
+- Model name and version
+- Risk classification (Unacceptable, High, Limited, Minimal)
+- Compliance status
+- Last validation date
+
+### Analytics Charts
+
+Interactive charts showing:
+
+- **Compliance Trends**: Score over time
+- **Violation Trends**: Violations by type and severity
+- **Usage Metrics**: API calls, tokens, costs
+- **Performance**: Response times, success rates
+
+## Customization
+
+Customize your dashboard view:
+
+<Steps>
+  <Step title="Choose Metrics">
+    Select which metrics and KPIs to display
+  </Step>
+  <Step title="Set Time Range">
+    View data for last 7, 30, 90 days, or custom range
+  </Step>
+  <Step title="Filter by Project">
+    Focus on specific projects or view all
+  </Step>
+  <Step title="Export Reports">
+    Download compliance reports as PDF or CSV
+  </Step>
+</Steps>
+
+## Quick Actions
+
+From the dashboard, you can:
+
+- **Create API Key**: Generate new AI Gateway keys
+- **Register Model**: Add new AI models to registry
+- **Create Policy**: Define new compliance policies
+- **View Alerts**: Check real-time compliance alerts
+- **Generate Report**: Export compliance documentation
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Violations" icon="list" href="/features/violations-tracking">
+    Manage and resolve violations
+  </Card>
+  <Card title="Models Registry" icon="microchip" href="/features/models-registry">
+    Register and manage AI models
+  </Card>
+  <Card title="Analytics" icon="chart-bar" href="/features/analytics">
+    Deep dive into analytics
+  </Card>
+  <Card title="Alerts" icon="bell" href="/features/alerts">
+    Configure compliance alerts
+  </Card>
+</CardGroup>

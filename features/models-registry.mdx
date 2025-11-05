@@ -1,0 +1,259 @@
+---
+title: "AI Models Registry"
+description: "Centralized registry for all your AI models with risk classification and compliance tracking"
+---
+
+## AI Models Registry
+
+The Models Registry is your centralized hub for managing all AI models used in your applications, including risk classification, compliance status, and performance monitoring.
+
+## Why Register Models?
+
+<CardGroup cols={2}>
+  <Card title="EU AI Act Compliance" icon="scale-balanced">
+    Required for high-risk AI systems under EU AI Act
+  </Card>
+  <Card title="Risk Classification" icon="triangle-exclamation">
+    Automatically classify models by risk level
+  </Card>
+  <Card title="Documentation" icon="file-text">
+    Maintain technical documentation for each model
+  </Card>
+  <Card title="Monitoring" icon="chart-line">
+    Track model performance and compliance over time
+  </Card>
+</CardGroup>
+
+## Risk Classifications
+
+Models are classified according to EU AI Act risk levels:
+
+<Tabs>
+  <Tab title="Unacceptable Risk">
+    **Prohibited** - Cannot be deployed
+    - Social scoring systems
+    - Subliminal manipulation
+    - Exploitation of vulnerabilities
+    - Real-time biometric identification (with exceptions)
+  </Tab>
+  <Tab title="High Risk">
+    **Strict requirements** - Full compliance needed
+    - Employment decisions
+    - Credit scoring
+    - Educational admissions
+    - Law enforcement
+    - Critical infrastructure
+  </Tab>
+  <Tab title="Limited Risk">
+    **Transparency obligations** - Disclosure required
+    - Chatbots
+    - Emotion recognition
+    - Biometric categorization
+    - Deepfake generation
+  </Tab>
+  <Tab title="Minimal Risk">
+    **No specific obligations**
+    - Spam filters
+    - Video game AI
+    - Inventory management
+  </Tab>
+</Tabs>
+
+## Registering a Model
+
+<Steps>
+  <Step title="Basic Information">
+    ```typescript
+    const model = await regpilot.models.register({
+      name: "Customer Support Classifier",
+      version: "1.0.0",
+      provider: "openai",
+      model_id: "gpt-4-turbo",
+      description: "Classifies customer support tickets"
+    });
+    ```
+  </Step>
+
+  <Step title="Risk Classification">
+    Select the appropriate risk level based on intended use:
+    ```typescript
+    await regpilot.models.update(model.id, {
+      risk_level: "limited",
+      intended_purpose: "Customer support automation",
+      target_users: "Customer service representatives"
+    });
+    ```
+  </Step>
+
+  <Step title="Technical Documentation">
+    Upload required documentation:
+    - System architecture
+    - Training data description
+    - Performance metrics
+    - Risk assessment
+  </Step>
+
+  <Step title="Compliance Settings">
+    Configure compliance monitoring:
+    ```typescript
+    await regpilot.models.setCompliance(model.id, {
+      frameworks: ["eu_ai_act", "gdpr"],
+      monitoring_enabled: true,
+      governor_enabled: true
+    });
+    ```
+  </Step>
+</Steps>
+
+## Model Information
+
+Each registered model includes:
+
+### Basic Details
+- Name and version
+- Provider and model ID
+- Description and purpose
+- Deployment environment
+
+### Risk Assessment
+- Risk classification
+- Intended purpose
+- Target user groups
+- Potential risks identified
+
+### Technical Documentation
+- Model architecture
+- Training data sources
+- Performance metrics
+- Validation results
+- Bias testing results
+
+### Compliance Status
+- Applicable frameworks
+- Compliance score
+- Active violations
+- Last assessment date
+
+## Managing Models
+
+### Update Model
+
+```typescript
+await regpilot.models.update("model_123", {
+  version: "1.1.0",
+  status: "production",
+  performance_metrics: {
+    accuracy: 0.94,
+    f1_score: 0.92,
+    latency_p95: 250
+  }
+});
+```
+
+### Archive Model
+
+```typescript
+await regpilot.models.archive("model_123", {
+  reason: "Replaced by v2.0",
+  replacement_model_id: "model_456"
+});
+```
+
+### Generate Documentation
+
+```typescript
+const docs = await regpilot.models.generateDocs("model_123", {
+  format: "pdf",
+  include_sections: [
+    "technical_specs",
+    "risk_assessment",
+    "compliance_status",
+    "performance_metrics"
+  ]
+});
+```
+
+## Model Monitoring
+
+Continuous monitoring includes:
+
+- **Performance Tracking**: Accuracy, latency, error rates
+- **Compliance Validation**: Ongoing EU AI Act checks
+- **Bias Detection**: Regular fairness assessments
+- **Usage Analytics**: Request volumes and patterns
+- **Incident Tracking**: Errors and violations
+
+## Compliance Requirements
+
+For **high-risk models**, you must maintain:
+
+<AccordionGroup>
+  <Accordion title="Technical Documentation" icon="file">
+    - Detailed system description
+    - Development and testing procedures
+    - Risk management documentation
+    - Data governance records
+  </Accordion>
+
+  <Accordion title="Risk Management System" icon="shield">
+    - Identified risks and mitigations
+    - Residual risk evaluation
+    - Testing and validation results
+    - Ongoing monitoring procedures
+  </Accordion>
+
+  <Accordion title="Data Governance" icon="database">
+    - Training data description
+    - Data quality metrics
+    - Bias assessments
+    - Data provenance records
+  </Accordion>
+
+  <Accordion title="Human Oversight" icon="user">
+    - Oversight measures
+    - Stop/override capabilities
+    - Human-in-the-loop procedures
+    - Responsibility assignment
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Steps>
+  <Step title="Register Early">
+    Register models during development, not just at deployment
+  </Step>
+
+  <Step title="Version Control">
+    Track all model versions with detailed change logs
+  </Step>
+
+  <Step title="Regular Updates">
+    Keep documentation and compliance status current
+  </Step>
+
+  <Step title="Monitor Continuously">
+    Enable ongoing performance and compliance monitoring
+  </Step>
+
+  <Step title="Document Changes">
+    Record all updates, incidents, and modifications
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Risk Classification Guide" icon="triangle-exclamation" href="/compliance/risk-classification">
+    Learn about EU AI Act risk levels
+  </Card>
+  <Card title="Documentation Requirements" icon="file-text" href="/compliance/documentation-requirements">
+    Technical documentation guide
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/compliance/models">
+    Models API documentation
+  </Card>
+  <Card title="Governor" icon="crown" href="/ai-gateway/governor">
+    Enable Governor validation
+  </Card>
+</CardGroup>
