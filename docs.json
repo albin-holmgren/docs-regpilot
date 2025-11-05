@@ -8,6 +8,9 @@
     "dark": "#18181b"
   },
   "favicon": "/favicon.svg",
+  "search": {
+    "prompt": "Search RegPilot documentation..."
+  },
   "navigation": {
     "tabs": [
       {
