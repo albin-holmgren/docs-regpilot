@@ -1,0 +1,79 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "RegPilot Documentation",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://regpilot.dev"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#27272a",
+    "light": "#3f3f46",
+    "dark": "#18181b"
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/regpilot/regpilot"
+  },
+  "anchors": [
+    {
+      "name": "Dashboard",
+      "icon": "grid-2",
+      "url": "https://regpilot.dev"
+    },
+    {
+      "name": "Community",
+      "icon": "github",
+      "url": "https://github.com/regpilot/regpilot"
+    },
+    {
+      "name": "Support",
+      "icon": "envelope",
+      "url": "mailto:support@regpilot.com"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "installation",
+        "authentication"
+      ]
+    },
+    {
+      "group": "Core Features",
+      "pages": [
+        "features/overview-dashboard",
+        "features/compliance-management",
+        "features/violations-tracking",
+        "features/analytics",
+        "features/models-registry",
+        "features/policies",
+        "features/alerts"
+      ]
+    },
+    {
+      "group": "AI Gateway",
+      "pages": [
+        "ai-gateway/introduction",
+        "ai-gateway/api-keys",
+        "ai-gateway/governor",
+        "ai-gateway/usage-tracking"
+      ]
+    },
+    {
+      "group": "EU AI Act Compliance",
+      "pages": [
+        "compliance/eu-ai-act-overview"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/regpilot",
+    "github": "https://github.com/regpilot",
+    "linkedin": "https://linkedin.com/company/regpilot"
+  }
+}
