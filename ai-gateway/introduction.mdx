@@ -1,0 +1,337 @@
+---
+title: "AI Gateway Introduction"
+description: "Proxy your AI requests through RegPilot for compliance validation and monitoring"
+---
+
+## What is the AI Gateway?
+
+The AI Gateway is RegPilot's intelligent proxy layer that sits between your application and AI providers (OpenAI, Anthropic, etc.). It automatically validates, monitors, and logs all AI interactions for compliance.
+
+<img
+  className="block dark:hidden"
+  src="/images/ai-gateway-flow-light.png"
+  alt="AI Gateway Flow"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/ai-gateway-flow-dark.png"
+  alt="AI Gateway Flow"
+/>
+
+## Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="Automatic Compliance" icon="shield-check">
+    Every AI response is validated against EU AI Act requirements automatically
+  </Card>
+
+  <Card title="Cost Tracking" icon="dollar-sign">
+    Monitor AI usage and costs across all models in a single dashboard
+  </Card>
+
+  <Card title="Risk Management" icon="triangle-exclamation">
+    Detect and block high-risk content before it reaches users
+  </Card>
+
+  <Card title="Audit Trail" icon="clipboard-list">
+    Complete logging of all AI interactions for regulatory compliance
+  </Card>
+</CardGroup>
+
+## How It Works
+
+<Steps>
+  <Step title="Your Application Sends Request">
+    Your app sends an AI request to RegPilot Gateway instead of directly to OpenAI/Anthropic
+    
+    ```typescript
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      headers: { 'X-API-Key': process.env.REGPILOT_API_KEY },
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'User question' }]
+      })
+    });
+    ```
+  </Step>
+
+  <Step title="RegPilot Validates & Routes">
+    The Gateway:
+    - Validates your API key
+    - Checks compliance settings
+    - Routes to appropriate AI provider
+    - Applies Governor validation if enabled
+  </Step>
+
+  <Step title="AI Provider Responds">
+    The AI model (GPT-4, Claude, etc.) processes the request and returns a response
+  </Step>
+
+  <Step title="Compliance Check & Logging">
+    RegPilot:
+    - Validates response for compliance violations
+    - Logs the interaction
+    - Tracks usage and costs
+    - Returns sanitized response to your app
+  </Step>
+</Steps>
+
+## Features
+
+### Real-time Monitoring
+
+Track all AI interactions in real-time:
+
+- **Request/Response Logs**: Complete audit trail
+- **Usage Statistics**: Token counts and costs
+- **Performance Metrics**: Latency and success rates
+- **Error Tracking**: Failed requests and reasons
+
+### Cost Management
+
+Understand and control AI spending:
+
+<AccordionGroup>
+  <Accordion title="Unified Billing" icon="credit-card">
+    Single dashboard for all AI provider costs. Track spending across OpenAI, Anthropic, and custom models.
+  </Accordion>
+
+  <Accordion title="Budget Alerts" icon="bell">
+    Set spending limits and receive alerts when approaching thresholds.
+  </Accordion>
+
+  <Accordion title="Cost Attribution" icon="tags">
+    Tag requests by feature, user, or department for detailed cost analysis.
+  </Accordion>
+</AccordionGroup>
+
+### Governor Integration
+
+Enable the Governor feature for advanced compliance:
+
+```typescript
+const response = await fetch('https://regpilot.dev/api/ai/chat', {
+  headers: { 'X-API-Key': process.env.REGPILOT_API_KEY },
+  method: 'POST',
+  body: JSON.stringify({
+    messages: [{ role: 'user', content: 'Process refund denial' }],
+    // Enable Governor validation
+    governorMetadata: {
+      actionType: 'refund_denial',
+      recipientCountry: 'DE',
+      senderId: 'support_agent_123'
+    }
+  })
+});
+
+// Response includes compliance headers
+console.log(response.headers.get('X-Governor-Risk-Score')); // 25
+console.log(response.headers.get('X-Governor-Validated')); // true
+```
+
+## Supported AI Providers
+
+<Tabs>
+  <Tab title="OpenAI">
+    - GPT-4, GPT-4 Turbo
+    - GPT-3.5 Turbo
+    - DALL-E 3
+    - Whisper
+    - Text Embeddings
+  </Tab>
+
+  <Tab title="Anthropic">
+    - Claude 3 Opus
+    - Claude 3 Sonnet
+    - Claude 3 Haiku
+    - Claude 2.1
+  </Tab>
+
+  <Tab title="Custom Models">
+    - Self-hosted models
+    - Azure OpenAI
+    - AWS Bedrock
+    - Google Vertex AI
+  </Tab>
+</Tabs>
+
+## API Endpoints
+
+The AI Gateway provides multiple endpoints for different use cases:
+
+| Endpoint | Purpose | Streaming |
+|----------|---------|-----------|
+| `/api/ai/chat` | Chat completions | ✅ Yes |
+| `/api/ai/chat-v2` | Enhanced chat with Governor | ✅ Yes |
+| `/api/ai/complete` | Text completions | ❌ No |
+| `/api/ai/embeddings` | Text embeddings | ❌ No |
+
+## Quick Start
+
+<Steps>
+  <Step title="Create API Key">
+    Navigate to **AI Gateway → Overview** and create a new API key
+  </Step>
+
+  <Step title="Make Your First Request">
+    ```bash
+    curl -X POST https://regpilot.dev/api/ai/chat \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "messages": [
+          {"role": "user", "content": "Hello!"}
+        ]
+      }'
+    ```
+  </Step>
+
+  <Step title="View Analytics">
+    Check your dashboard to see request logs, costs, and compliance scores
+  </Step>
+</Steps>
+
+## Advanced Configuration
+
+### Request Headers
+
+Customize AI Gateway behavior with request headers:
+
+```typescript
+const response = await fetch('https://regpilot.dev/api/ai/chat', {
+  headers: {
+    'X-API-Key': process.env.REGPILOT_API_KEY,
+    'Content-Type': 'application/json',
+    
+    // Optional headers
+    'X-RegPilot-Model': 'gpt-4-turbo',        // Force specific model
+    'X-RegPilot-Temperature': '0.7',          // Override temperature
+    'X-RegPilot-Max-Tokens': '2000',          // Set max tokens
+    'X-RegPilot-User-ID': 'user_123',         // Track by user
+    'X-RegPilot-Feature': 'chat_support',     // Tag by feature
+  },
+  body: JSON.stringify({ messages: [...] })
+});
+```
+
+### Response Headers
+
+Every AI Gateway response includes compliance metadata:
+
+```typescript
+// Check response headers
+const riskScore = response.headers.get('X-Governor-Risk-Score');
+const validated = response.headers.get('X-Governor-Validated');
+const violations = response.headers.get('X-Governor-Violations');
+const auditId = response.headers.get('X-Governor-Audit-Id');
+
+console.log(`Risk: ${riskScore}/100, Validated: ${validated}`);
+```
+
+## Compliance Features
+
+### Automatic Violation Detection
+
+The Gateway automatically detects:
+
+- **Personal Data Exposure**: GDPR violations
+- **Discriminatory Content**: EU AI Act bias requirements
+- **Financial Advice**: Regulatory compliance
+- **Medical Information**: Healthcare regulations
+- **Age-Inappropriate Content**: Child safety laws
+
+### Audit Logging
+
+Every request is logged with:
+
+- Request/response content
+- Timestamp and duration
+- User and session identifiers
+- Compliance validation results
+- Governor risk scores
+
+Access audit logs in **AI Gateway → Logs** or via API.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Streaming for Better UX" icon="stream">
+    Enable streaming for chat interfaces to show responses as they're generated:
+    
+    ```typescript
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      headers: { 'X-API-Key': apiKey },
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [...],
+        stream: true  // Enable streaming
+      })
+    });
+    
+    const reader = response.body.getReader();
+    // Process stream chunks...
+    ```
+  </Accordion>
+
+  <Accordion title="Implement Retry Logic" icon="rotate">
+    Handle transient failures with exponential backoff:
+    
+    ```typescript
+    async function chatWithRetry(messages, retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          return await regpilot.chat.create({ messages });
+        } catch (error) {
+          if (i === retries - 1) throw error;
+          await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor Performance" icon="chart-line">
+    Track latency and error rates:
+    
+    - Set up alerts for high error rates
+    - Monitor P95/P99 latency
+    - Track success rates per model
+    - Review cost trends weekly
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="API Keys Management"
+    icon="key"
+    href="/ai-gateway/api-keys"
+  >
+    Learn how to create and manage API keys
+  </Card>
+
+  <Card
+    title="Enable Governor"
+    icon="crown"
+    href="/ai-gateway/governor"
+  >
+    Advanced compliance validation
+  </Card>
+
+  <Card
+    title="Usage Tracking"
+    icon="chart-bar"
+    href="/ai-gateway/usage-tracking"
+  >
+    Monitor costs and usage
+  </Card>
+
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/ai-gateway/chat"
+  >
+    Complete API documentation
+  </Card>
+</CardGroup>

@@ -1,0 +1,434 @@
+---
+title: "Installation"
+description: "Install and configure RegPilot in your application"
+---
+
+## Choose Your Installation Method
+
+RegPilot can be integrated into your application in multiple ways depending on your use case and technical stack.
+
+<CardGroup cols={2}>
+  <Card
+    title="REST API"
+    icon="plug"
+    href="#rest-api"
+  >
+    Direct HTTP requests - works with any language
+  </Card>
+  <Card
+    title="SDK Integration"
+    icon="box"
+    href="#sdk-integration"
+  >
+    Official SDKs for Node.js, Python, and more
+  </Card>
+  <Card
+    title="Framework Integration"
+    icon="layer-group"
+    href="#framework-integration"
+  >
+    Pre-built integrations for Next.js, React, etc.
+  </Card>
+  <Card
+    title="Self-Hosted"
+    icon="server"
+    href="/guides/self-hosting"
+  >
+    Deploy RegPilot on your own infrastructure
+  </Card>
+</CardGroup>
+
+## REST API
+
+The simplest way to get started is using the REST API directly. No installation required!
+
+### Prerequisites
+
+- RegPilot account ([sign up here](https://regpilot.dev/signup))
+- API key from your project dashboard
+
+### Make Your First Request
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://regpilot.dev/api/ai/chat \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Hello!"}
+    ]
+  }'
+```
+
+```javascript JavaScript (Fetch)
+const response = await fetch('https://regpilot.dev/api/ai/chat', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    messages: [{ role: 'user', content: 'Hello!' }]
+  })
+});
+
+const data = await response.json();
+```
+
+</CodeGroup>
+
+## SDK Integration
+
+For a more integrated experience, use our official SDKs with built-in TypeScript support.
+
+### Node.js / TypeScript
+
+<Steps>
+  <Step title="Install the package">
+    ```bash
+    npm install @regpilot/sdk
+    # or
+    yarn add @regpilot/sdk
+    # or
+    pnpm add @regpilot/sdk
+    ```
+  </Step>
+
+  <Step title="Initialize the client">
+    ```typescript
+    import { RegPilot } from '@regpilot/sdk';
+
+    const regpilot = new RegPilot({
+      apiKey: process.env.REGPILOT_API_KEY,
+      environment: 'production', // or 'development'
+    });
+    ```
+  </Step>
+
+  <Step title="Make a request">
+    ```typescript
+    const response = await regpilot.chat.create({
+      messages: [
+        { role: 'user', content: 'Hello from SDK!' }
+      ],
+      governorEnabled: true, // Enable compliance validation
+    });
+
+    console.log(response.content);
+    console.log('Risk Score:', response.riskScore);
+    ```
+  </Step>
+</Steps>
+
+### Python
+
+<Steps>
+  <Step title="Install the package">
+    ```bash
+    pip install regpilot
+    ```
+  </Step>
+
+  <Step title="Initialize the client">
+    ```python
+    from regpilot import RegPilot
+
+    client = RegPilot(
+        api_key=os.environ["REGPILOT_API_KEY"],
+        environment="production"
+    )
+    ```
+  </Step>
+
+  <Step title="Make a request">
+    ```python
+    response = client.chat.create(
+        messages=[
+            {"role": "user", "content": "Hello from Python SDK!"}
+        ],
+        governor_enabled=True
+    )
+
+    print(response.content)
+    print(f"Risk Score: {response.risk_score}")
+    ```
+  </Step>
+</Steps>
+
+## Framework Integration
+
+### Next.js Integration
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    npm install @regpilot/nextjs
+    ```
+  </Step>
+
+  <Step title="Create API route">
+    Create `app/api/chat/route.ts`:
+    
+    ```typescript
+    import { RegPilotHandler } from '@regpilot/nextjs';
+
+    export const POST = RegPilotHandler({
+      apiKey: process.env.REGPILOT_API_KEY!,
+      governorEnabled: true,
+    });
+    ```
+  </Step>
+
+  <Step title="Use in your components">
+    ```typescript
+    'use client';
+    
+    import { useRegPilot } from '@regpilot/nextjs/client';
+
+    export default function Chat() {
+      const { messages, sendMessage, isLoading } = useRegPilot();
+
+      return (
+        <div>
+          {messages.map((msg, i) => (
+            <div key={i}>{msg.content}</div>
+          ))}
+          <button onClick={() => sendMessage('Hello!')}>
+            Send
+          </button>
+        </div>
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+### React Integration
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    npm install @regpilot/react
+    ```
+  </Step>
+
+  <Step title="Wrap your app with provider">
+    ```tsx
+    import { RegPilotProvider } from '@regpilot/react';
+
+    function App() {
+      return (
+        <RegPilotProvider apiKey={process.env.REACT_APP_REGPILOT_API_KEY}>
+          <YourComponents />
+        </RegPilotProvider>
+      );
+    }
+    ```
+  </Step>
+
+  <Step title="Use the hook in components">
+    ```tsx
+    import { useRegPilot } from '@regpilot/react';
+
+    function ChatComponent() {
+      const { chat, isLoading, error } = useRegPilot();
+
+      const handleSubmit = async (message: string) => {
+        const response = await chat.send(message);
+        console.log(response);
+      };
+
+      return (
+        // Your UI
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Environment Variables
+
+Set up your environment variables for secure API key management:
+
+<Tabs>
+  <Tab title=".env.local (Next.js)">
+    ```bash
+    # Public (client-side safe)
+    NEXT_PUBLIC_REGPILOT_PROJECT_ID=your_project_id
+
+    # Private (server-side only)
+    REGPILOT_API_KEY=sk_your_api_key_here
+    REGPILOT_ENVIRONMENT=production
+    ```
+  </Tab>
+
+  <Tab title=".env (Node.js)">
+    ```bash
+    REGPILOT_API_KEY=sk_your_api_key_here
+    REGPILOT_PROJECT_ID=your_project_id
+    REGPILOT_ENVIRONMENT=production
+    ```
+  </Tab>
+
+  <Tab title=".env (Python)">
+    ```bash
+    REGPILOT_API_KEY=sk_your_api_key_here
+    REGPILOT_PROJECT_ID=your_project_id
+    REGPILOT_ENVIRONMENT=production
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  **Security Best Practice**: Never commit your API keys to version control. Always use environment variables and add `.env` files to your `.gitignore`.
+</Warning>
+
+## Configuration Options
+
+Configure RegPilot to match your requirements:
+
+```typescript
+const regpilot = new RegPilot({
+  // Required
+  apiKey: process.env.REGPILOT_API_KEY,
+  
+  // Optional
+  environment: 'production', // 'production' | 'development'
+  timeout: 30000, // Request timeout in milliseconds
+  retries: 3, // Number of retry attempts
+  baseURL: 'https://regpilot.dev/api', // Custom base URL
+  
+  // Governor settings
+  governor: {
+    enabled: true,
+    strictMode: false,
+    autoApproveThreshold: 50,
+  },
+  
+  // Logging
+  logging: {
+    level: 'info', // 'debug' | 'info' | 'warn' | 'error'
+    pretty: true, // Pretty print logs in development
+  },
+});
+```
+
+## Verify Installation
+
+Test your installation with a simple health check:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { RegPilot } from '@regpilot/sdk';
+
+const client = new RegPilot({
+  apiKey: process.env.REGPILOT_API_KEY!,
+});
+
+// Test connection
+const health = await client.health.check();
+console.log('✅ RegPilot is connected:', health.status);
+```
+
+```python Python
+from regpilot import RegPilot
+
+client = RegPilot(api_key=os.environ["REGPILOT_API_KEY"])
+
+# Test connection
+health = client.health.check()
+print(f"✅ RegPilot is connected: {health.status}")
+```
+
+```bash cURL
+curl https://regpilot.dev/api/health \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Authentication"
+    icon="key"
+    href="/authentication"
+  >
+    Learn about API authentication and security
+  </Card>
+
+  <Card
+    title="Make Your First Request"
+    icon="paper-plane"
+    href="/quickstart"
+  >
+    Follow our quickstart guide
+  </Card>
+
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Explore the complete API documentation
+  </Card>
+
+  <Card
+    title="Integration Guides"
+    icon="puzzle"
+    href="/guides/nextjs-integration"
+  >
+    Framework-specific integration guides
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Installation fails with npm" icon="npm">
+    If you encounter issues installing the SDK:
+    
+    1. Clear npm cache: `npm cache clean --force`
+    2. Delete `node_modules` and `package-lock.json`
+    3. Run `npm install` again
+    4. Try with a different package manager (yarn or pnpm)
+  </Accordion>
+
+  <Accordion title="Module not found errors" icon="file-slash">
+    Ensure you're importing from the correct package:
+    
+    ```typescript
+    // ✅ Correct
+    import { RegPilot } from '@regpilot/sdk';
+    
+    // ❌ Incorrect
+    import { RegPilot } from 'regpilot-sdk';
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript type errors" icon="code">
+    Make sure you have the latest type definitions:
+    
+    ```bash
+    npm install --save-dev @types/node
+    ```
+    
+    And ensure your `tsconfig.json` includes:
+    ```json
+    {
+      "compilerOptions": {
+        "esModuleInterop": true,
+        "moduleResolution": "node"
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  **Need help?** Join our [community forum](https://github.com/regpilot/regpilot/discussions) or email [support@regpilot.com](mailto:support@regpilot.com).
+</Note>
