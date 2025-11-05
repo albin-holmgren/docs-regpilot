@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "RegPilot Documentation",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#3B82F6",
-    "dark": "#1E40AF"
+    "primary": "#27272a",
+    "light": "#3f3f46",
+    "dark": "#18181b"
   },
   "favicon": "/favicon.svg",
   "navigation": {
