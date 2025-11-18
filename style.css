@@ -150,15 +150,24 @@ article,
   margin-right: 0;
 }
 
-/* Page title and description area */
-h1,
-h1 + p,
-h1 + div,
-[class*="description"],
-[class*="subtitle"] {
-  max-width: 100% !important;
+/* Page title - can be wider */
+h1 {
+  max-width: 90% !important;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+/* Description/subtitle - constrain for readability */
+h1 + p,
+h1 + div,
+p[class*="description"],
+div[class*="description"],
+[class*="subtitle"],
+main p:first-of-type {
+  max-width: 800px !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Ensure all parent containers are full width */
