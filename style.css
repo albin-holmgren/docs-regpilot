@@ -19,27 +19,56 @@ body, article, p, li, span {
   letter-spacing: -0.008em;
   line-height: 1.7;
 }
-h1,h2,h3,h4 { font-weight: 500 !important; }
+h1,h2,h3,h4 { font-weight: 400 !important; }
 
-/* Orange text with gray background for active page */
+/* NUCLEAR: Override ALL orange backgrounds */
+nav a:hover,
+nav a:hover *,
+aside a:hover,
+aside a:hover *,
+[class*="sidebar"] a:hover,
+[class*="sidebar"] a:hover *,
 nav a[aria-current="page"],
+nav a[aria-current="page"] *,
 nav [class*="active"],
-nav .nav-link[aria-current="page"] {
-  color: #eb5600 !important;
+nav [class*="active"] *,
+aside a[aria-current="page"],
+aside a[aria-current="page"] *,
+aside [class*="active"],
+aside [class*="active"] *,
+[class*="sidebar"] a[aria-current="page"],
+[class*="sidebar"] a[aria-current="page"] *,
+[class*="sidebar"] [class*="active"],
+[class*="sidebar"] [class*="active"] *,
+a[aria-current="page"],
+a[aria-current="page"] *,
+[class*="active"],
+[class*="active"] *,
+li[class*="active"],
+li[class*="active"] *,
+li[class*="active"] a,
+li[class*="active"] a * {
+  color: #f97316 !important;
   background-color: #f3f4f6 !important;
-  font-weight: 500 !important;
+  background: #f3f4f6 !important;
   border-radius: 6px !important;
   padding: 0.5rem 0.75rem !important;
 }
 
-/* Dark mode active state */
+/* Dark mode - hover and active identical */
+.dark nav a:hover,
+.dark aside a:hover,
+.dark [class*="sidebar"] a:hover,
 .dark nav a[aria-current="page"],
 .dark nav [class*="active"],
-.dark nav .nav-link[aria-current="page"] {
+.dark aside a[aria-current="page"], 
+.dark aside [class*="active"],
+.dark [class*="sidebar"] a[aria-current="page"],
+.dark [class*="sidebar"] [class*="active"] {
   color: #f97316 !important;
   background-color: #374151 !important;
+  background: #374151 !important;
 }
-nav a:hover { color: #f97316 !important; }
 
 /* TRUE FULL WIDTH */
 *, *::before, *::after { box-sizing: border-box; }
@@ -62,16 +91,32 @@ main > div, article > div, [class*="Content"] {
   main > div, article > div { padding-left: 2rem !important; padding-right: 2rem !important; }
 }
 
-/* Hide scrollbars in sidebar while keeping scrolling functionality */
-nav, aside:first-of-type, .sidebar {
+/* NUCLEAR: Hide ALL scrollbars everywhere */
+* {
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important; /* IE/Edge */
 }
 
-nav::-webkit-scrollbar,
-aside:first-of-type::-webkit-scrollbar,
-.sidebar::-webkit-scrollbar {
+*::-webkit-scrollbar {
   display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Specifically target sidebar area */
+nav, aside, .sidebar, [class*="sidebar"], [class*="Nav"]:not([class*="Topbar"]) {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+nav::-webkit-scrollbar,
+aside::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+[class*="sidebar"]::-webkit-scrollbar,
+[class*="Nav"]:not([class*="Topbar"])::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Code blocks */

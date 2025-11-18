@@ -27,10 +27,6 @@
   "sidebar": {
     "defaultMenuCollapseLevel": 1
   },
-  "topbarCtaButton": {
-    "type": "github",
-    "url": "https://github.com/regpilot/regpilot"
-  },
   "anchors": [
     { "name": "Dashboard", "icon": "grid-2", "url": "https://regpilot.dev" },
     { "name": "Community", "icon": "github", "url": "https://github.com/regpilot/regpilot" },
