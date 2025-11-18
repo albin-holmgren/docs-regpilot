@@ -1,35 +1,66 @@
 /* Custom RegPilot Documentation Styles */
 
-/* SIDEBAR BACKGROUND COLORS */
-/* Light mode - sidebar background - CUSTOM COLOR #F0EFEA */
-aside,
-aside > *,
-nav[class*="sidebar"],
-div[class*="sidebar"],
-.sidebar,
-[data-sidebar],
-[class*="SideNav"],
-[class*="sidenav"],
-html:not([class*="dark"]) aside,
-html:not([class*="dark"]) aside *:not(a):not(button):not(svg),
+/* ENTIRE LEFT NAVIGATION SIDEBAR - CUSTOM COLOR #F0EFEA (light) / #1B1913 (dark) */
+
+/* Light mode - ENTIRE left sidebar panel background */
+nav[class*="Nav"]:not([class*="Topbar"]),
+nav[class*="Nav"]:not([class*="Topbar"]) *,
+nav[class*="sidebar"]:first-of-type,
+nav[class*="sidebar"]:first-of-type *,
+aside:first-of-type,
+aside:first-of-type *,
+[class*="SideNav"]:first-of-type,
+[class*="SideNav"]:first-of-type *,
+div[class*="sidebar"]:first-of-type,
+div[class*="sidebar"]:first-of-type *,
 html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]),
-html:not([class*="dark"]) [class*="sidebar"],
-html:not([class*="dark"]) [class*="Sidebar"] {
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) *:not(a):not(button),
+html:not([class*="dark"]) aside:first-of-type,
+html:not([class*="dark"]) aside:first-of-type * {
   background-color: #F0EFEA !important;
   background: #F0EFEA !important;
 }
 
-/* Dark mode - sidebar background - CUSTOM COLOR #1B1913 */
-html[class*="dark"] aside,
-html[class*="dark"] aside *:not(a):not(button):not(svg),
+/* Override for links and buttons - keep them transparent */
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) a,
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) button,
+html:not([class*="dark"]) aside:first-of-type a,
+html:not([class*="dark"]) aside:first-of-type button {
+  background-color: transparent !important;
+}
+
+/* Dark mode - ENTIRE left sidebar panel background */
 html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]),
-html[class*="dark"] [class*="sidebar"],
-html[class*="dark"] [class*="Sidebar"],
-html[class*="dark"] [class*="SideNav"],
-.dark aside,
-.dark aside > * {
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) *,
+html[class*="dark"] aside:first-of-type,
+html[class*="dark"] aside:first-of-type *,
+.dark nav[class*="Nav"]:not([class*="Topbar"]),
+.dark nav[class*="Nav"]:not([class*="Topbar"]) *,
+.dark aside:first-of-type,
+.dark aside:first-of-type * {
   background-color: #1B1913 !important;
   background: #1B1913 !important;
+}
+
+/* Override for links and buttons in dark mode */
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) a,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) button,
+html[class*="dark"] aside:first-of-type a,
+html[class*="dark"] aside:first-of-type button {
+  background-color: transparent !important;
+}
+
+/* Keep RIGHT sidebar (TOC) default - reset everything */
+aside:last-of-type,
+aside:last-of-type *,
+aside:not(:first-of-type),
+aside:not(:first-of-type) *,
+[class*="toc"],
+[class*="toc"] *,
+[class*="TableOfContents"],
+[class*="TableOfContents"] * {
+  background-color: inherit !important;
+  background: inherit !important;
 }
 
 /* FULL WIDTH HEADER/TOPBAR - Remove all padding and margins */
@@ -66,23 +97,18 @@ main > div {
   width: 100% !important;
 }
 
-/* Ultra aggressive sidebar color - target everything */
-aside *,
-[class*="sidebar"] *,
-[class*="SideNav"] * {
-  background-color: inherit !important;
-}
-
-/* Ensure sidebar container gets the color */
-aside,
-aside::before,
-aside::after {
+/* Clean up - ensure only LEFT sidebar pseudo-elements get the color */
+aside:first-of-type::before,
+aside:first-of-type::after,
+nav[class*="Nav"]:not([class*="Topbar"])::before,
+nav[class*="Nav"]:not([class*="Topbar"])::after {
   background-color: #F0EFEA !important;
 }
 
-html[class*="dark"] aside,
-html[class*="dark"] aside::before,
-html[class*="dark"] aside::after {
+html[class*="dark"] aside:first-of-type::before,
+html[class*="dark"] aside:first-of-type::after,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"])::before,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"])::after {
   background-color: #1B1913 !important;
 }
 
