@@ -1,17 +1,30 @@
 /* Custom RegPilot Documentation Styles */
 
-/* Light mode - sidebar background */
+/* Light mode - sidebar background - CUSTOM COLOR #F0EFEA */
+:root:not(.dark) aside,
+:root:not(.dark) nav,
 html:not([class*="dark"]) aside,
-html:not([class*="dark"]) nav[class*="Nav"],
-html:not([class*="dark"]) [class*="sidebar"] {
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]),
+html:not([class*="dark"]) [class*="sidebar"],
+html:not([class*="dark"]) [class*="Sidebar"],
+.light aside,
+.light nav:not([class*="Topbar"]),
+aside:not([class*="Topbar"]) {
   background-color: #F0EFEA !important;
+  background: #F0EFEA !important;
 }
 
-/* Dark mode - sidebar background */
+/* Dark mode - sidebar background - CUSTOM COLOR #1B1913 */
+:root.dark aside,
+:root.dark nav:not([class*="Topbar"]),
 html[class*="dark"] aside,
-html[class*="dark"] nav[class*="Nav"],
-html[class*="dark"] [class*="sidebar"] {
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]),
+html[class*="dark"] [class*="sidebar"],
+html[class*="dark"] [class*="Sidebar"],
+.dark aside,
+.dark nav:not([class*="Topbar"]) {
   background-color: #1B1913 !important;
+  background: #1B1913 !important;
 }
 
 /* Full width header/topbar */
