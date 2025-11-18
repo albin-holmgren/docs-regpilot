@@ -1,0 +1,50 @@
+/* Custom RegPilot Documentation Styles */
+
+/* Light mode - sidebar background */
+html:not([class*="dark"]) aside,
+html:not([class*="dark"]) nav[class*="Nav"],
+html:not([class*="dark"]) [class*="sidebar"] {
+  background-color: #F0EFEA !important;
+}
+
+/* Dark mode - sidebar background */
+html[class*="dark"] aside,
+html[class*="dark"] nav[class*="Nav"],
+html[class*="dark"] [class*="sidebar"] {
+  background-color: #1B1913 !important;
+}
+
+/* Remove container max-width for full-width layout */
+.container,
+[class*="container"],
+main > div {
+  max-width: 100% !important;
+}
+
+/* Remove padding from root container */
+body {
+  padding: 0 !important;
+}
+
+/* Sidebar flush to left edge */
+aside,
+nav[class*="Nav"] {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+  left: 0 !important;
+}
+
+/* Main content area adjustments */
+main {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Content wrapper */
+article,
+[class*="content"] {
+  max-width: 100% !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
