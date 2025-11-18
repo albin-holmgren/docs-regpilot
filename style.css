@@ -135,13 +135,27 @@ main {
   width: 100% !important;
 }
 
-/* Content wrapper */
+/* Content wrapper - constrain for readability */
 article,
-[class*="content"] {
-  max-width: 100% !important;
+[class*="content"],
+main > div {
+  max-width: 1200px !important;
   width: 100% !important;
   padding-left: 2rem;
   padding-right: 2rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Page title and description area */
+h1,
+h1 + p,
+h1 + div,
+[class*="description"],
+[class*="subtitle"] {
+  max-width: 100% !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Ensure all parent containers are full width */
