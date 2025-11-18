@@ -10,8 +10,13 @@
   "colors": {
     "primary": "#27272a",
     "light": "#3f3f46",
-    "dark": "#18181b"
+    "dark": "#18181b",
+    "background": {
+      "light": "#F7F7F4",
+      "dark": "#14120B"
+    }
   },
+  "layout": "sidenav",
   "topbarCtaButton": {
     "type": "github",
     "url": "https://github.com/regpilot/regpilot"
