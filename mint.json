@@ -73,7 +73,12 @@
     {
       "group": "API Reference",
       "pages": [
-        "api-reference/introduction"
+        "api-reference/authentication",
+        "api-reference/chat-streaming",
+        "api-reference/chat-complete",
+        "api-reference/usage-stats",
+        "api-reference/errors",
+        "api-reference/rate-limits"
       ]
     }
   ],
