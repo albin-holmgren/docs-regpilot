@@ -1,43 +1,61 @@
 /* Custom RegPilot Documentation Styles */
 
+/* SIDEBAR BACKGROUND COLORS */
 /* Light mode - sidebar background - CUSTOM COLOR #F0EFEA */
-:root:not(.dark) aside,
-:root:not(.dark) nav,
+aside,
+aside > *,
+nav[class*="sidebar"],
+div[class*="sidebar"],
+.sidebar,
+[data-sidebar],
+[class*="SideNav"],
+[class*="sidenav"],
 html:not([class*="dark"]) aside,
+html:not([class*="dark"]) aside *:not(a):not(button):not(svg),
 html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]),
 html:not([class*="dark"]) [class*="sidebar"],
-html:not([class*="dark"]) [class*="Sidebar"],
-.light aside,
-.light nav:not([class*="Topbar"]),
-aside:not([class*="Topbar"]) {
+html:not([class*="dark"]) [class*="Sidebar"] {
   background-color: #F0EFEA !important;
   background: #F0EFEA !important;
 }
 
 /* Dark mode - sidebar background - CUSTOM COLOR #1B1913 */
-:root.dark aside,
-:root.dark nav:not([class*="Topbar"]),
 html[class*="dark"] aside,
+html[class*="dark"] aside *:not(a):not(button):not(svg),
 html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]),
 html[class*="dark"] [class*="sidebar"],
 html[class*="dark"] [class*="Sidebar"],
+html[class*="dark"] [class*="SideNav"],
 .dark aside,
-.dark nav:not([class*="Topbar"]) {
+.dark aside > * {
   background-color: #1B1913 !important;
   background: #1B1913 !important;
 }
 
-/* Full width header/topbar */
+/* FULL WIDTH HEADER/TOPBAR - Remove all padding and margins */
 header,
+header > *,
 nav[class*="Topbar"],
+nav[class*="topbar"],
 [class*="topbar"],
-[class*="header"] {
-  max-width: 100% !important;
-  width: 100% !important;
+[class*="Topbar"],
+[class*="header"],
+[class*="Header"] {
+  max-width: 100vw !important;
+  width: 100vw !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+/* Force header content to fill width */
+header > div,
+nav[class*="Topbar"] > div {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }
 
 /* Remove container max-width for full-width layout */
@@ -46,6 +64,26 @@ nav[class*="Topbar"],
 main > div {
   max-width: 100% !important;
   width: 100% !important;
+}
+
+/* Ultra aggressive sidebar color - target everything */
+aside *,
+[class*="sidebar"] *,
+[class*="SideNav"] * {
+  background-color: inherit !important;
+}
+
+/* Ensure sidebar container gets the color */
+aside,
+aside::before,
+aside::after {
+  background-color: #F0EFEA !important;
+}
+
+html[class*="dark"] aside,
+html[class*="dark"] aside::before,
+html[class*="dark"] aside::after {
+  background-color: #1B1913 !important;
 }
 
 /* Remove padding from root container */
