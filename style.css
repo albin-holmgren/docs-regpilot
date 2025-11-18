@@ -1,5 +1,15 @@
 /* Custom RegPilot Documentation Styles */
 
+/* Root level settings */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* ENTIRE LEFT NAVIGATION SIDEBAR - CUSTOM COLOR #F0EFEA (light) / #1B1913 (dark) */
 
 /* NUCLEAR OPTION: Use universal selector to force background on EVERYTHING in left sidebar */
@@ -112,16 +122,7 @@ html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"])::after {
   background-color: #1B1913 !important;
 }
 
-/* Remove padding from root container */
-body {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-html {
-  padding: 0 !important;
-  margin: 0 !important;
-}
+/* Remove duplicate root rules - already defined at top */
 
 /* Sidebar flush to left edge */
 aside,
@@ -131,43 +132,55 @@ nav[class*="Nav"]:not([class*="Topbar"]) {
   left: 0 !important;
 }
 
-/* Main content area adjustments */
+/* Main content area adjustments - prevent overflow */
 main {
   margin-left: 0 !important;
   padding-left: 0 !important;
-  max-width: 100% !important;
+  max-width: 100vw !important;
   width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
 }
 
-/* Content wrapper - full width with padding for readability */
+/* Content wrapper - FULL WIDTH */
 article,
-[class*="content"] {
+[class*="content"],
+[class*="Content"] {
   max-width: none !important;
   width: 100% !important;
   padding-left: 3rem;
   padding-right: 3rem;
   margin-left: 0;
   margin-right: 0;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
 }
 
-/* Page title - can be wider */
+/* Force ALL children to respect boundaries but not text elements */
+main > div,
+article > div:not([class*="prose"]),
+[class*="content"] > div {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Removed - too aggressive */
+
+/* Page title */
 h1 {
-  max-width: 90% !important;
+  max-width: 100% !important;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
-/* Description/subtitle - constrain for readability */
-h1 + p,
-h1 + div,
-p[class*="description"],
-div[class*="description"],
-[class*="subtitle"],
-main p:first-of-type {
+/* Description/paragraph text - simple width constraint */
+article > p:first-of-type,
+main > div p:first-of-type,
+h1 + p {
   max-width: 800px !important;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
 }
 
 /* Ensure all parent containers are full width */
