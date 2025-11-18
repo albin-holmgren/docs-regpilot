@@ -2,50 +2,80 @@
 
 /* ENTIRE LEFT NAVIGATION SIDEBAR - CUSTOM COLOR #F0EFEA (light) / #1B1913 (dark) */
 
-/* Light mode - ENTIRE left sidebar panel background */
+/* Light mode - Apply to EVERY element in the left sidebar using universal selector */
 nav[class*="Nav"]:not([class*="Topbar"]),
-nav[class*="Nav"]:not([class*="Topbar"]) *,
+nav[class*="Nav"]:not([class*="Topbar"]) div,
+nav[class*="Nav"]:not([class*="Topbar"]) ul,
+nav[class*="Nav"]:not([class*="Topbar"]) li,
+nav[class*="Nav"]:not([class*="Topbar"]) span,
+nav[class*="Nav"]:not([class*="Topbar"]) p,
 nav[class*="sidebar"]:first-of-type,
-nav[class*="sidebar"]:first-of-type *,
+nav[class*="sidebar"]:first-of-type div,
 aside:first-of-type,
-aside:first-of-type *,
+aside:first-of-type div,
+aside:first-of-type ul,
+aside:first-of-type li,
+aside:first-of-type span,
 [class*="SideNav"]:first-of-type,
-[class*="SideNav"]:first-of-type *,
+[class*="SideNav"]:first-of-type div,
 div[class*="sidebar"]:first-of-type,
-div[class*="sidebar"]:first-of-type *,
+div[class*="sidebar"]:first-of-type div,
 html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]),
-html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) *:not(a):not(button),
-html:not([class*="dark"]) aside:first-of-type,
-html:not([class*="dark"]) aside:first-of-type * {
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) div,
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) ul,
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) li,
+html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) span,
+html:not([class*="dark"]) aside:first-of-type div,
+html:not([class*="dark"]) aside:first-of-type ul,
+html:not([class*="dark"]) aside:first-of-type li {
   background-color: #F0EFEA !important;
   background: #F0EFEA !important;
 }
 
-/* Override for links and buttons - keep them transparent */
+/* Links should also have the sidebar background */
 html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) a,
+html:not([class*="dark"]) aside:first-of-type a {
+  background-color: #F0EFEA !important;
+}
+
+/* Buttons can be transparent for hover effects */
 html:not([class*="dark"]) nav[class*="Nav"]:not([class*="Topbar"]) button,
-html:not([class*="dark"]) aside:first-of-type a,
 html:not([class*="dark"]) aside:first-of-type button {
   background-color: transparent !important;
 }
 
-/* Dark mode - ENTIRE left sidebar panel background */
+/* Dark mode - Apply to EVERY element in the left sidebar */
 html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]),
-html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) *,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) div,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) ul,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) li,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) span,
+html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) p,
 html[class*="dark"] aside:first-of-type,
-html[class*="dark"] aside:first-of-type *,
+html[class*="dark"] aside:first-of-type div,
+html[class*="dark"] aside:first-of-type ul,
+html[class*="dark"] aside:first-of-type li,
+html[class*="dark"] aside:first-of-type span,
 .dark nav[class*="Nav"]:not([class*="Topbar"]),
-.dark nav[class*="Nav"]:not([class*="Topbar"]) *,
+.dark nav[class*="Nav"]:not([class*="Topbar"]) div,
+.dark nav[class*="Nav"]:not([class*="Topbar"]) ul,
+.dark nav[class*="Nav"]:not([class*="Topbar"]) li,
 .dark aside:first-of-type,
-.dark aside:first-of-type * {
+.dark aside:first-of-type div,
+.dark aside:first-of-type ul,
+.dark aside:first-of-type li {
   background-color: #1B1913 !important;
   background: #1B1913 !important;
 }
 
-/* Override for links and buttons in dark mode */
+/* Links should also have the sidebar background in dark mode */
 html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) a,
+html[class*="dark"] aside:first-of-type a {
+  background-color: #1B1913 !important;
+}
+
+/* Buttons can be transparent for hover effects in dark mode */
 html[class*="dark"] nav[class*="Nav"]:not([class*="Topbar"]) button,
-html[class*="dark"] aside:first-of-type a,
 html[class*="dark"] aside:first-of-type button {
   background-color: transparent !important;
 }
