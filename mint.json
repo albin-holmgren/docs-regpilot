@@ -7,111 +7,44 @@
     "href": "https://regpilot.dev"
   },
   "favicon": "/favicon.svg",
+  "theme": "prism",
   "colors": {
-    "primary": "#27272a",
-    "light": "#3f3f46",
-    "dark": "#18181b",
+    "primary": "#eb5600",
+    "light": "#f97316",
+    "dark": "#c2410c",
     "background": {
-      "light": "#F7F7F4",
-      "dark": "#14120B"
+      "light": "#f7f7f4",
+      "dark": "#14120b"
+    },
+    "anchors": {
+      "from": "#eb5600",
+      "to": "#f97316"
     }
   },
-  "layout": "sidenav",
+  "modeToggle": {
+    "default": "dark"
+  },
+  "sidebar": {
+    "defaultMenuCollapseLevel": 1
+  },
   "topbarCtaButton": {
     "type": "github",
     "url": "https://github.com/regpilot/regpilot"
   },
   "anchors": [
-    {
-      "name": "Dashboard",
-      "icon": "grid-2",
-      "url": "https://regpilot.dev"
-    },
-    {
-      "name": "Community",
-      "icon": "github",
-      "url": "https://github.com/regpilot/regpilot"
-    },
-    {
-      "name": "Support",
-      "icon": "envelope",
-      "url": "mailto:support@regpilot.com"
-    }
+    { "name": "Dashboard", "icon": "grid-2", "url": "https://regpilot.dev" },
+    { "name": "Community", "icon": "github", "url": "https://github.com/regpilot/regpilot" },
+    { "name": "Support", "icon": "envelope", "url": "mailto:support@regpilot.com" }
   ],
   "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "installation",
-        "authentication"
-      ]
-    },
-    {
-      "group": "Core Features",
-      "pages": [
-        "features/overview-dashboard",
-        "features/compliance-management",
-        "features/violations-tracking",
-        "features/analytics",
-        "features/models-registry",
-        "features/policies",
-        "features/alerts"
-      ]
-    },
-    {
-      "group": "AI Gateway",
-      "pages": [
-        "ai-gateway/introduction",
-        "ai-gateway/api-keys",
-        "ai-gateway/governor",
-        "ai-gateway/usage-tracking"
-      ]
-    },
-    {
-      "group": "EU AI Act Compliance",
-      "pages": [
-        "compliance/eu-ai-act-overview"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/authentication",
-        "api-reference/chat-streaming",
-        "api-reference/chat-complete",
-        "api-reference/usage-stats",
-        "api-reference/errors",
-        "api-reference/rate-limits"
-      ]
-    },
-    {
-      "group": "Integration Guides",
-      "pages": [
-        "guides/nextjs-integration",
-        "guides/react-integration",
-        "guides/node-integration",
-        "guides/python-integration"
-      ]
-    },
-    {
-      "group": "Best Practices",
-      "pages": [
-        "guides/security-best-practices",
-        "guides/compliance-workflows",
-        "guides/monitoring-setup",
-        "guides/governor-configuration"
-      ]
-    },
-    {
-      "group": "Advanced",
-      "pages": [
-        "guides/custom-policies",
-        "guides/webhook-integration",
-        "guides/self-hosting"
-      ]
-    }
+    { "group": "Getting Started", "pages": ["introduction","quickstart","installation","authentication"] },
+    { "group": "Core Features", "pages": ["features/overview-dashboard","features/compliance-management","features/violations-tracking","features/analytics","features/models-registry","features/policies","features/alerts"] },
+    { "group": "AI Gateway", "pages": ["ai-gateway/introduction","ai-gateway/api-keys","ai-gateway/governor","ai-gateway/usage-tracking"] },
+    { "group": "EU AI Act Compliance", "pages": ["compliance/eu-ai-act-overview"] },
+    { "group": "API Reference", "pages": ["api-reference/authentication","api-reference/chat-streaming","api-reference/chat-complete","api-reference/usage-stats","api-reference/errors","api-reference/rate-limits"] },
+    { "group": "Integration Guides", "pages": ["guides/nextjs-integration","guides/react-integration","guides/node-integration","guides/python-integration"] },
+    { "group": "Best Practices", "pages": ["guides/security-best-practices","guides/compliance-workflows","guides/monitoring-setup","guides/governor-configuration"] },
+    { "group": "Advanced", "pages": ["guides/custom-policies","guides/webhook-integration","guides/self-hosting"] }
   ],
   "footerSocials": {
     "x": "https://x.com/regpilot",
