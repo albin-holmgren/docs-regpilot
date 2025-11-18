@@ -1,0 +1,225 @@
+---
+title: 'Python & FastAPI Integration'
+description: 'Integrate RegPilot with Python applications using FastAPI'
+---
+
+# Python & FastAPI Integration
+
+Integrate RegPilot with Python applications using FastAPI.
+
+## Basic Setup
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import httpx
+import os
+
+app = FastAPI()
+
+class ChatRequest(BaseModel):
+    message: str
+    quality: str = "balanced"
+
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                'https://regpilot.dev/api/ai/chat',
+                headers={
+                    'X-API-Key': os.getenv('REGPILOT_API_KEY'),
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'messages': [{'role': 'user', 'content': request.message}],
+                    'quality': request.quality
+                }
+            )
+            response.raise_for_status()
+            return {"response": response.text}
+        
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+```
+
+## With Streaming
+
+```python
+from fastapi.responses import StreamingResponse
+
+@app.post("/chat/stream")
+async def chat_stream(request: ChatRequest):
+    async def generate():
+        async with httpx.AsyncClient() as client:
+            async with client.stream(
+                'POST',
+                'https://regpilot.dev/api/ai/chat',
+                headers={
+                    'X-API-Key': os.getenv('REGPILOT_API_KEY'),
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'messages': [{'role': 'user', 'content': request.message}],
+                    'quality': request.quality
+                }
+            ) as response:
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+    
+    return StreamingResponse(generate(), media_type="text/event-stream")
+```
+
+## With Conversation Management
+
+```python
+from typing import List, Dict
+
+conversations: Dict[str, List[Dict]] = {}
+
+class ConversationRequest(BaseModel):
+    session_id: str
+    message: str
+
+@app.post("/chat/conversation")
+async def chat_conversation(request: ConversationRequest):
+    # Get or create conversation
+    messages = conversations.get(request.session_id, [])
+    messages.append({'role': 'user', 'content': request.message})
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                'https://regpilot.dev/api/ai/chat',
+                headers={
+                    'X-API-Key': os.getenv('REGPILOT_API_KEY'),
+                    'Content-Type': 'application/json'
+                },
+                json={'messages': messages, 'quality': 'balanced'}
+            )
+            response.raise_for_status()
+            
+            text = response.text
+            messages.append({'role': 'assistant', 'content': text})
+            conversations[request.session_id] = messages
+            
+            return {"response": text}
+        
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/chat/conversation/{session_id}")
+async def clear_conversation(session_id: str):
+    conversations.pop(session_id, None)
+    return {"status": "cleared"}
+```
+
+## With Error Handling
+
+```python
+import asyncio
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10)
+)
+async def chat_with_retry(messages: List[Dict]):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            'https://regpilot.dev/api/ai/chat',
+            headers={
+                'X-API-Key': os.getenv('REGPILOT_API_KEY'),
+                'Content-Type': 'application/json'
+            },
+            json={'messages': messages, 'quality': 'balanced'},
+            timeout=30.0
+        )
+        response.raise_for_status()
+        return response.text
+
+@app.post("/chat/reliable")
+async def chat_reliable(request: ChatRequest):
+    try:
+        text = await chat_with_retry([
+            {'role': 'user', 'content': request.message}
+        ])
+        return {"response": text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed after retries: {str(e)}")
+```
+
+## With Governor
+
+```python
+class GovernorRequest(BaseModel):
+    message: str
+    action_type: str = "customer_support"
+    recipient_country: str = "US"
+
+@app.post("/chat/governed")
+async def chat_governed(request: GovernorRequest):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                'https://regpilot.dev/api/ai/chat',
+                headers={
+                    'X-API-Key': os.getenv('REGPILOT_API_KEY'),
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'messages': [{'role': 'user', 'content': request.message}],
+                    'quality': 'frontier',
+                    'governorMetadata': {
+                        'actionType': request.action_type,
+                        'recipientCountry': request.recipient_country,
+                        'senderId': 'python_api'
+                    }
+                }
+            )
+            response.raise_for_status()
+            
+            return {
+                "response": response.text,
+                "riskLevel": response.headers.get('x-governor-risk-level'),
+                "riskScore": response.headers.get('x-governor-risk-score'),
+                "violations": response.headers.get('x-governor-violations')
+            }
+        
+        except httpx.HTTPError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+```
+
+## Environment Setup
+
+```python
+# .env
+REGPILOT_API_KEY=sk_your_api_key_here
+```
+
+```python
+# config.py
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    regpilot_api_key: str
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+## Running
+
+```bash
+# Install dependencies
+pip install fastapi uvicorn httpx python-dotenv pydantic-settings tenacity
+
+# Run server
+uvicorn main:app --reload
+```
+
+---
+
+**Related:** [Express](/08-integrations/express) | [Next.js](/08-integrations/nextjs)

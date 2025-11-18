@@ -1,0 +1,304 @@
+---
+title: 'Webhooks'
+description: 'Real-time notifications for RegPilot events'
+---
+
+# Webhooks
+
+Real-time notifications for RegPilot events.
+
+<Note>
+Webhook support is **coming soon** in Q1 2026. This documentation describes the planned implementation.
+</Note>
+
+## Overview
+
+Webhooks allow you to receive real-time notifications when events occur in RegPilot.
+
+## Supported Events
+
+### Alert Events
+
+- `alert.created` - New alert triggered
+- `alert.acknowledged` - Alert acknowledged by user
+- `alert.resolved` - Alert marked as resolved
+
+### Case Events
+
+- `case.created` - New case opened
+- `case.updated` - Case status changed
+- `case.resolved` - Case closed
+
+### Compliance Events
+
+- `violation.detected` - New violation found
+- `violation.resolved` - Violation fixed
+- `compliance.score_changed` - Compliance score updated
+
+### Usage Events
+
+- `usage.threshold_reached` - Credit usage milestone
+- `usage.limit_exceeded` - Credit limit hit
+
+## Setup (Coming Soon)
+
+### Register Webhook
+
+```typescript
+const response = await fetch('https://regpilot.dev/api/webhooks', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': process.env.REGPILOT_API_KEY!,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://your-app.com/webhooks/regpilot',
+    events: ['alert.created', 'case.created', 'violation.detected'],
+    secret: 'your_webhook_secret' // For signature verification
+  })
+});
+```
+
+### Webhook Payload
+
+```typescript
+{
+  id: string,              // Event ID
+  type: string,           // Event type (e.g., 'alert.created')
+  timestamp: string,      // ISO 8601 timestamp
+  project_id: string,     // Project ID
+  data: {
+    // Event-specific data
+  }
+}
+```
+
+### Example Payloads
+
+**alert.created:**
+```json
+{
+  "id": "evt_abc123",
+  "type": "alert.created",
+  "timestamp": "2025-11-17T12:00:00Z",
+  "project_id": "proj_xyz789",
+  "data": {
+    "alert_id": "alert_123",
+    "severity": "HIGH",
+    "title": "High risk content detected",
+    "message": "AI response had risk score of 85"
+  }
+}
+```
+
+**violation.detected:**
+```json
+{
+  "id": "evt_def456",
+  "type": "violation.detected",
+  "timestamp": "2025-11-17T12:00:00Z",
+  "project_id": "proj_xyz789",
+  "data": {
+    "violation_id": "viol_456",
+    "type": "PRIVACY",
+    "severity": "CRITICAL",
+    "description": "PII detected in response"
+  }
+}
+```
+
+## Receiving Webhooks
+
+### Basic Handler
+
+```typescript
+// app/api/webhooks/regpilot/route.ts (Next.js)
+export async function POST(request: Request) {
+  const payload = await request.json();
+  
+  // Verify signature (recommended)
+  const signature = request.headers.get('x-regpilot-signature');
+  if (!verifySignature(payload, signature)) {
+    return Response.json({ error: 'Invalid signature' }, { status: 401 });
+  }
+  
+  // Handle event
+  switch (payload.type) {
+    case 'alert.created':
+      await handleAlertCreated(payload.data);
+      break;
+    
+    case 'violation.detected':
+      await handleViolationDetected(payload.data);
+      break;
+    
+    default:
+      console.log('Unhandled event:', payload.type);
+  }
+  
+  return Response.json({ received: true });
+}
+```
+
+### Express Handler
+
+```javascript
+app.post('/webhooks/regpilot', express.json(), async (req, res) => {
+  const payload = req.body;
+  
+  // Verify signature
+  const signature = req.headers['x-regpilot-signature'];
+  if (!verifySignature(payload, signature)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  
+  // Handle event
+  try {
+    switch (payload.type) {
+      case 'alert.created':
+        await handleAlert(payload.data);
+        break;
+      
+      case 'case.created':
+        await handleCase(payload.data);
+        break;
+    }
+    
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Processing failed' });
+  }
+});
+```
+
+## Signature Verification
+
+```typescript
+import crypto from 'crypto';
+
+function verifySignature(payload: any, signature: string | null): boolean {
+  if (!signature) return false;
+  
+  const secret = process.env.WEBHOOK_SECRET!;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+## Best Practices
+
+### 1. Verify Signatures
+
+Always verify webhook signatures to ensure authenticity:
+
+```typescript
+if (!verifySignature(payload, signature)) {
+  return Response.json({ error: 'Unauthorized' }, { status: 401 });
+}
+```
+
+### 2. Respond Quickly
+
+Return 200 OK immediately, process asynchronously:
+
+```typescript
+export async function POST(request: Request) {
+  const payload = await request.json();
+  
+  // Queue for async processing
+  await queue.add(payload);
+  
+  // Respond immediately
+  return Response.json({ received: true });
+}
+```
+
+### 3. Handle Retries
+
+RegPilot will retry failed webhooks:
+- **Retry Schedule:** 1min, 5min, 15min, 1hr, 6hr
+- **Max Attempts:** 5
+- **Status Codes:** 200-299 considered success
+
+### 4. Idempotency
+
+Handle duplicate deliveries:
+
+```typescript
+const processedEvents = new Set<string>();
+
+async function handleWebhook(payload: any) {
+  if (processedEvents.has(payload.id)) {
+    return; // Already processed
+  }
+  
+  // Process event
+  await processEvent(payload);
+  
+  processedEvents.add(payload.id);
+}
+```
+
+## Testing
+
+### Local Testing with ngrok
+
+```bash
+# Start ngrok
+ngrok http 3000
+
+# Use ngrok URL for webhook
+# https://abc123.ngrok.io/webhooks/regpilot
+```
+
+### Test Event (Coming Soon)
+
+```typescript
+// Trigger test webhook
+await fetch('https://regpilot.dev/api/webhooks/test', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': process.env.REGPILOT_API_KEY!,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    webhook_id: 'webhook_123',
+    event_type: 'alert.created'
+  })
+});
+```
+
+## Management
+
+### List Webhooks
+
+```
+GET https://regpilot.dev/api/webhooks
+```
+
+### Update Webhook
+
+```
+PATCH https://regpilot.dev/api/webhooks/{webhook_id}
+```
+
+### Delete Webhook
+
+```
+DELETE https://regpilot.dev/api/webhooks/{webhook_id}
+```
+
+---
+
+**Status:** Coming Q1 2026  
+**Contact:** webhooks@regpilot.dev for early access
+
+**Related:** [Best Practices](/09-guides/best-practices) | [Troubleshooting](/10-troubleshooting)

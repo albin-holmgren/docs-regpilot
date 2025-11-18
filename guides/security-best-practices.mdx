@@ -1,0 +1,442 @@
+---
+title: 'Best Practices'
+description: 'Production-ready patterns for building with RegPilot'
+---
+
+# Best Practices
+
+Production-ready patterns for building with RegPilot.
+
+## Security
+
+### 1. Protect API Keys
+
+```typescript
+// ✅ Good - Environment variables
+const apiKey = process.env.REGPILOT_API_KEY;
+
+// ❌ Bad - Hardcoded
+const apiKey = 'sk_abc123';
+
+// ❌ Bad - Client-side
+// Never expose in browser JavaScript!
+```
+
+### 2. Use Secure Headers
+
+```typescript
+// ✅ Production-safe (won't be stripped)
+headers: {
+  'X-API-Key': process.env.REGPILOT_API_KEY
+}
+
+// ⚠️ May be stripped by proxies
+headers: {
+  'Authorization': `Bearer ${apiKey}`
+}
+```
+
+### 3. Rotate Keys Regularly
+
+```bash
+# Rotate every 90 days
+1. Create new key
+2. Update all environments
+3. Verify new key works
+4. Revoke old key
+```
+
+## Performance
+
+### 1. Choose Right Quality Tier
+
+```typescript
+// Simple FAQ - use cheap
+await chat('What are your hours?', 'cheap');
+
+// General use - balanced
+await chat('Explain quantum computing', 'balanced');
+
+// Complex tasks - frontier
+await chat('Review this legal contract', 'frontier');
+```
+
+### 2. Leverage Caching
+
+```typescript
+// Cache FAQ responses
+const faqs = [
+  'What are your hours?',
+  'Where are you located?',
+  'What is your return policy?'
+];
+
+// First time: Cache MISS
+// Subsequent: Cache HIT (FREE!)
+faqs.forEach(q => chat(q, 'cheap'));
+```
+
+### 3. Optimize Prompts
+
+```typescript
+// ❌ Too verbose
+const prompt = `I would like you to please analyze this text and provide me with a detailed summary of the main points, key takeaways, and any important insights that you can identify from the content...`;
+
+// ✅ Concise
+const prompt = `Summarize the main points:`;
+```
+
+### 4. Manage Context Windows
+
+```typescript
+// Keep under 4000 tokens
+function trimHistory(messages: Message[]) {
+  const maxTokens = 4000;
+  let total = messages.reduce((sum, m) => sum + m.content.length, 0);
+  
+  while (total > maxTokens * 4 && messages.length > 2) {
+    messages.splice(1, 1); // Remove oldest
+    total = messages.reduce((sum, m) => sum + m.content.length, 0);
+  }
+  
+  return messages;
+}
+```
+
+## Error Handling
+
+### 1. Implement Retries
+
+```typescript
+async function robustChat(messages: any[], maxRetries = 3) {
+  let delay = 1000;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch('https://regpilot.dev/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'X-API-Key': process.env.REGPILOT_API_KEY!,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages, quality: 'balanced' })
+      });
+      
+      if (response.ok) return response;
+      
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('retry-after') || '60');
+        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        continue;
+      }
+      
+      if (response.status >= 500 && i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2; // Exponential backoff
+        continue;
+      }
+      
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+    }
+  }
+}
+```
+
+### 2. Handle Specific Errors
+
+```typescript
+try {
+  const response = await chat(messages);
+  // Process response
+} catch (error) {
+  if (error.status === 401) {
+    // Invalid API key
+    console.error('API key invalid. Please check credentials.');
+  } else if (error.status === 429) {
+    // Rate limited
+    console.error('Rate limit exceeded. Retry later.');
+  } else if (error.status >= 500) {
+    // Server error
+    console.error('Server error. Contact support.');
+  }
+}
+```
+
+### 3. Log Errors
+
+```typescript
+async function chatWithLogging(messages: any[]) {
+  const startTime = Date.now();
+  
+  try {
+    const response = await chat(messages);
+    
+    // Log success
+    logger.info({
+      action: 'chat_success',
+      duration: Date.now() - startTime,
+      model: response.headers.get('x-regpilot-model')
+    });
+    
+    return response;
+  } catch (error) {
+    // Log error
+    logger.error({
+      action: 'chat_error',
+      duration: Date.now() - startTime,
+      error: error.message
+    });
+    
+    throw error;
+  }
+}
+```
+
+## Cost Optimization
+
+### 1. Monitor Spending
+
+```typescript
+// Check usage regularly
+const stats = await fetch(
+  `https://regpilot.dev/api/usage?projectId=${projectId}`,
+  { headers: { 'X-API-Key': apiKey } }
+);
+
+const data = await stats.json();
+
+if (data.budget.remaining < 100) {
+  console.warn('Low credit balance!');
+  // Send alert
+}
+```
+
+### 2. Set Budgets
+
+```typescript
+// Enforce budget limits
+const MONTHLY_BUDGET = 1000; // $1000
+
+async function checkBudget() {
+  const usage = await getUsage();
+  
+  if (usage.budget.used > MONTHLY_BUDGET * 0.9) {
+    // 90% used - send warning
+    sendAlert('Budget Warning: 90% used');
+  }
+  
+  if (usage.budget.used >= MONTHLY_BUDGET) {
+    // Budget exceeded - stop requests
+    throw new Error('Monthly budget exceeded');
+  }
+}
+```
+
+### 3. Use Quality Tiers Wisely
+
+```typescript
+function selectQuality(taskComplexity: number): string {
+  if (taskComplexity < 3) return 'cheap';
+  if (taskComplexity < 7) return 'balanced';
+  return 'frontier';
+}
+```
+
+## Compliance
+
+### 1. Enable Governor for Sensitive Use Cases
+
+```typescript
+// Legal, medical, HR, or high-risk content
+const response = await fetch('https://regpilot.dev/api/ai/chat', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': process.env.REGPILOT_API_KEY!,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    messages: [...],
+    governorMetadata: {
+      actionType: 'legal_advice',
+      recipientCountry: 'US',
+      senderId: 'user_123'
+    }
+  })
+});
+```
+
+### 2. Monitor Alerts
+
+```typescript
+// Check alerts daily
+async function checkAlerts() {
+  const alerts = await getActiveAlerts();
+  
+  const critical = alerts.filter(a => a.severity === 'CRITICAL');
+  
+  if (critical.length > 0) {
+    // Send immediate notification
+    sendUrgentAlert(critical);
+  }
+}
+```
+
+### 3. Maintain Audit Trails
+
+```typescript
+// Store audit IDs for compliance
+const auditId = response.headers.get('x-governor-audit-id');
+
+await db.conversations.update({
+  where: { id: conversationId },
+  data: { 
+    governorAuditId: auditId,
+    lastValidated: new Date()
+  }
+});
+```
+
+## Development Workflow
+
+### 1. Separate Environments
+
+```bash
+# .env.development
+REGPILOT_API_KEY=sk_dev_xxx
+
+# .env.staging
+REGPILOT_API_KEY=sk_staging_xxx
+
+# .env.production
+REGPILOT_API_KEY=sk_prod_xxx
+```
+
+### 2. Test Before Deploy
+
+```typescript
+// Test script
+async function testApi() {
+  const tests = [
+    { name: 'Simple query', quality: 'cheap' },
+    { name: 'Complex query', quality: 'frontier' },
+    { name: 'With Governor', hasGovernor: true }
+  ];
+  
+  for (const test of tests) {
+    try {
+      await chat([{ role: 'user', content: test.name }]);
+      console.log(`✅ ${test.name} passed`);
+    } catch (error) {
+      console.error(`❌ ${test.name} failed:`, error);
+    }
+  }
+}
+```
+
+### 3. Monitor in Production
+
+```typescript
+// Production monitoring
+setInterval(async () => {
+  const health = await checkHealth();
+  
+  if (!health.ok) {
+    sendAlert('API health check failed');
+  }
+}, 60000); // Every minute
+```
+
+## Deployment
+
+### 1. CI/CD Integration
+
+```yaml
+# .github/workflows/deploy.yml
+- name: Test RegPilot Integration
+  env:
+    REGPILOT_API_KEY: ${{ secrets.REGPILOT_API_KEY }}
+  run: npm test
+```
+
+### 2. Environment Variables
+
+```bash
+# Vercel
+vercel env add REGPILOT_API_KEY
+
+# Netlify
+netlify env:set REGPILOT_API_KEY sk_xxx
+
+# Railway
+railway variables set REGPILOT_API_KEY=sk_xxx
+```
+
+### 3. Health Checks
+
+```typescript
+// Add health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    await testRegPilotConnection();
+    res.json({ status: 'healthy' });
+  } catch (error) {
+    res.status(500).json({ status: 'unhealthy', error: error.message });
+  }
+});
+```
+
+## Monitoring
+
+### 1. Track Key Metrics
+
+```typescript
+const metrics = {
+  requests: 0,
+  errors: 0,
+  cacheHits: 0,
+  totalCost: 0,
+  avgLatency: 0
+};
+
+// Update after each request
+function recordMetrics(response: Response) {
+  metrics.requests++;
+  metrics.totalCost += parseFloat(response.headers.get('x-credits-charged') || '0');
+  
+  if (response.headers.get('x-cache-status') === 'HIT') {
+    metrics.cacheHits++;
+  }
+}
+```
+
+### 2. Set Up Alerts
+
+```typescript
+// Alert on anomalies
+if (metrics.errors / metrics.requests > 0.05) {
+  // Error rate > 5%
+  sendAlert('High error rate detected');
+}
+
+if (metrics.cacheHits / metrics.requests < 0.1) {
+  // Cache hit rate < 10%
+  sendAlert('Low cache hit rate');
+}
+```
+
+### 3. Dashboard Integration
+
+```typescript
+// Send to monitoring service
+await prometheus.gauge('regpilot_requests_total', metrics.requests);
+await prometheus.gauge('regpilot_cost_usd', metrics.totalCost);
+await prometheus.gauge('regpilot_cache_hit_rate', 
+  metrics.cacheHits / metrics.requests
+);
+```
+
+---
+
+**Related:** [Error Handling](/09-guides/error-handling) | [Troubleshooting](/10-troubleshooting)

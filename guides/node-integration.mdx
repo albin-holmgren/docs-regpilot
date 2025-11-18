@@ -1,0 +1,221 @@
+---
+title: 'Express.js Integration'
+description: 'Integrate RegPilot with Express.js backend applications'
+---
+
+# Express.js Integration
+
+Integrate RegPilot with Express.js backend applications.
+
+## Basic Setup
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+app.post('/api/chat', async (req, res) => {
+  const { message } = req.body;
+
+  try {
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': process.env.REGPILOT_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: message }],
+        quality: 'balanced'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    // Stream response to client
+    response.body.pipe(res);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+```
+
+## With Conversation Management
+
+```javascript
+const sessions = new Map();
+
+app.post('/api/chat/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+  const { message } = req.body;
+
+  // Get or create session
+  let messages = sessions.get(sessionId) || [];
+  messages.push({ role: 'user', content: message });
+
+  try {
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': process.env.REGPILOT_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ messages, quality: 'balanced' })
+    });
+
+    const text = await response.text();
+
+    // Save assistant response
+    messages.push({ role: 'assistant', content: text });
+    sessions.set(sessionId, messages);
+
+    res.json({ response: text });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Clear session
+app.delete('/api/chat/:sessionId', (req, res) => {
+  sessions.delete(req.params.sessionId);
+  res.status(204).send();
+});
+```
+
+## With Error Handling
+
+```javascript
+async function chatWithRetry(messages, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch('https://regpilot.dev/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'X-API-Key': process.env.REGPILOT_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages, quality: 'balanced' })
+      });
+
+      if (response.ok) return response;
+
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('retry-after') || '60');
+        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        continue;
+      }
+
+      throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
+    }
+  }
+}
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const response = await chatWithRetry([
+      { role: 'user', content: req.body.message }
+    ]);
+
+    const text = await response.text();
+    res.json({ response: text });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+## With Governor
+
+```javascript
+app.post('/api/chat/legal', async (req, res) => {
+  const { message, userCountry } = req.body;
+
+  try {
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': process.env.REGPILOT_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: message }],
+        quality: 'frontier',
+        governorMetadata: {
+          actionType: 'legal_advice',
+          recipientCountry: userCountry || 'US',
+          senderId: req.user?.id || 'anonymous'
+        }
+      })
+    });
+
+    const text = await response.text();
+
+    // Check Governor results
+    const riskLevel = response.headers.get('x-governor-risk-level');
+    const violations = response.headers.get('x-governor-violations');
+
+    res.json({
+      response: text,
+      riskLevel,
+      violations: parseInt(violations) || 0
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+## Middleware
+
+```javascript
+// Rate limiting
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100 // 100 requests per minute
+});
+
+app.use('/api/chat', limiter);
+
+// Authentication
+function authenticate(req, res, next) {
+  const apiKey = req.headers['authorization'];
+
+  if (!apiKey) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Verify API key
+  // ...
+
+  next();
+}
+
+app.use('/api/chat', authenticate);
+```
+
+## Environment Setup
+
+```bash
+# .env
+REGPILOT_API_KEY=sk_your_api_key_here
+PORT=3000
+```
+
+---
+
+**Related:** [Next.js](/08-integrations/nextjs) | [Python](/08-integrations/python-fastapi)

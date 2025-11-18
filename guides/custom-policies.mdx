@@ -1,0 +1,415 @@
+---
+title: 'Custom Policies'
+description: 'Create and manage custom compliance policies for your organization'
+---
+
+# Custom Policies
+
+Define organization-specific compliance rules and policies beyond standard regulations.
+
+## Overview
+
+RegPilot's policy engine allows you to:
+- Create custom compliance rules
+- Define industry-specific requirements
+- Implement company policies
+- Automate policy enforcement
+
+## Policy Types
+
+### Content Policies
+
+Control what AI can say or do:
+
+```yaml
+contentPolicy:
+  name: "Financial Advice Policy"
+  rules:
+    - type: "prohibited_content"
+      patterns:
+        - "guaranteed returns"
+        - "risk-free investment"
+        - "cannot lose money"
+      action: "block"
+      severity: "high"
+    
+    - type: "required_disclaimer"
+      triggers:
+        - "investment advice"
+        - "stock recommendation"
+      disclaimer: "This is not financial advice. Consult a licensed advisor."
+      action: "append"
+```
+
+### Data Policies
+
+Manage sensitive data handling:
+
+```yaml
+dataPolicy:
+  name: "PII Protection Policy"
+  rules:
+    - type: "pii_detection"
+      categories:
+        - "email"
+        - "phone"
+        - "ssn"
+        - "credit_card"
+      action: "redact"
+      notification: true
+    
+    - type: "data_retention"
+      maxAge: "90 days"
+      autoDelete: true
+```
+
+### Model Policies
+
+Control AI model usage:
+
+```yaml
+modelPolicy:
+  name: "Approved Models Only"
+  rules:
+    - type: "allowlist"
+      models:
+        - "gpt-4"
+        - "gpt-3.5-turbo"
+        - "claude-3-opus"
+      action: "block_others"
+    
+    - type: "cost_limit"
+      maxCostPerRequest: 0.50
+      action: "require_approval"
+```
+
+## Creating Custom Policies
+
+### Via Dashboard
+
+1. Navigate to **Settings** → **Policies**
+2. Click **Create Custom Policy**
+3. Select policy type
+4. Define rules and actions
+5. Test policy
+6. Enable policy
+
+### Via API
+
+```typescript
+const policy = await fetch('https://regpilot.dev/api/policies', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': process.env.REGPILOT_API_KEY,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: "Healthcare HIPAA Policy",
+    type: "content",
+    enabled: true,
+    rules: [
+      {
+        id: "no-phi",
+        description: "Block Protected Health Information",
+        pattern: /\\b(patient|diagnosis|treatment|medical record)\\b/i,
+        action: "block",
+        severity: "critical"
+      },
+      {
+        id: "required-disclaimer",
+        description: "Add HIPAA disclaimer",
+        trigger: "medical_context",
+        action: "append",
+        content: "This information is not medical advice."
+      }
+    ]
+  })
+});
+```
+
+## Policy Rule Syntax
+
+### Pattern Matching
+
+```typescript
+rules: [
+  {
+    // Exact match
+    pattern: "exact phrase",
+    matchType: "exact"
+  },
+  {
+    // Regex pattern
+    pattern: /\\b(term1|term2)\\b/i,
+    matchType: "regex"
+  },
+  {
+    // Keyword list
+    keywords: ["word1", "word2", "word3"],
+    matchType: "any" // or "all"
+  },
+  {
+    // Semantic similarity
+    concept: "financial_advice",
+    threshold: 0.8,
+    matchType: "semantic"
+  }
+]
+```
+
+### Actions
+
+Available actions when a policy rule triggers:
+
+- `block` - Reject the request
+- `warn` - Allow with warning
+- `redact` - Remove matching content
+- `replace` - Substitute with safe content
+- `append` - Add disclaimer/notice
+- `require_approval` - Human review
+- `log` - Record but allow
+- `notify` - Send alert
+
+### Severity Levels
+
+```typescript
+severity: "info" | "low" | "medium" | "high" | "critical"
+```
+
+## Policy Examples
+
+### Financial Services
+
+```yaml
+name: "SEC Compliance Policy"
+rules:
+  # Prohibit forward-looking statements
+  - pattern: /(will|expect|anticipate|believe).*(?:increase|profit|growth)/i
+    action: "warn"
+    message: "Forward-looking statement detected. Add safe harbor disclaimer."
+  
+  # Require disclosure
+  - trigger: "performance_data"
+    action: "append"
+    content: "Past performance does not guarantee future results."
+  
+  # Block insider information
+  - keywords: ["material non-public", "insider trading", "MNPI"]
+    action: "block"
+    severity: "critical"
+```
+
+### Healthcare (HIPAA)
+
+```yaml
+name: "HIPAA Compliance Policy"
+rules:
+  # PHI Detection
+  - type: "pii_detection"
+    categories: ["medical_record_number", "diagnosis", "prescription"]
+    action: "redact"
+    replacement: "[REDACTED PHI]"
+  
+  # Minimum necessary
+  - check: "data_minimization"
+    threshold: 0.7
+    action: "warn"
+  
+  # Business Associate requirement
+  - trigger: "phi_processing"
+    action: "require_approval"
+    approver: "privacy_officer"
+```
+
+### Education (FERPA)
+
+```yaml
+name: "FERPA Student Privacy Policy"
+rules:
+  # Student record protection
+  - keywords: ["student ID", "grade", "transcript", "enrollment"]
+    context: "personally_identifiable"
+    action: "redact"
+  
+  # Parental consent
+  - check: "student_under_18"
+    action: "require_consent"
+    consentType: "parental"
+```
+
+## Policy Testing
+
+### Test Before Deployment
+
+```typescript
+// Test policy against sample data
+const testResult = await fetch('https://regpilot.dev/api/policies/test', {
+  method: 'POST',
+  headers: { 'X-API-Key': API_KEY },
+  body: JSON.stringify({
+    policyId: "policy_123",
+    testCases: [
+      {
+        input: "Buy this stock - guaranteed 50% returns!",
+        expectedAction: "block",
+        expectedSeverity: "high"
+      },
+      {
+        input: "Historical data shows growth trends",
+        expectedAction: "allow"
+      }
+    ]
+  })
+});
+
+console.log(testResult.passed, testResult.failed);
+```
+
+### A/B Testing
+
+Enable shadow mode to test policies without blocking:
+
+```typescript
+policy: {
+  enabled: true,
+  shadowMode: true, // Log violations but don't block
+  shadowDuration: "7 days"
+}
+```
+
+## Policy Management
+
+### Versioning
+
+Policies support version control:
+
+```typescript
+// Create new version
+POST /api/policies/{id}/versions
+
+// Rollback to previous version
+POST /api/policies/{id}/rollback
+{
+  "version": "v1.2"
+}
+
+// Compare versions
+GET /api/policies/{id}/diff?from=v1.0&to=v2.0
+```
+
+### Policy Sets
+
+Group related policies:
+
+```typescript
+const policySet = {
+  name: "Financial Services Compliance",
+  policies: [
+    "sec-compliance",
+    "finra-rules",
+    "anti-money-laundering",
+    "fair-lending"
+  ],
+  enforcementMode: "strict" // or "permissive"
+};
+```
+
+### Approval Workflows
+
+```typescript
+policyApproval: {
+  required: true,
+  approvers: [
+    { role: "legal", required: true },
+    { role: "compliance", required: true },
+    { role: "security", required: false }
+  ],
+  minApprovals: 2
+}
+```
+
+## Monitoring Policy Effectiveness
+
+### Policy Analytics
+
+Track policy performance:
+
+```typescript
+GET /api/policies/analytics?policyId={id}&period=30d
+
+Response: {
+  triggers: 1543,
+  blocks: 234,
+  warnings: 892,
+  falsePositives: 12,
+  effectiveness: 0.92
+}
+```
+
+### Audit Logs
+
+All policy actions are logged:
+
+```typescript
+GET /api/policies/audit-logs
+
+Response: {
+  logs: [
+    {
+      timestamp: "2025-11-18T10:30:00Z",
+      policyId: "policy_123",
+      ruleId: "no-phi",
+      action: "block",
+      user: "user_456",
+      input: "[REDACTED]",
+      reason: "PHI detected: diagnosis"
+    }
+  ]
+}
+```
+
+## Best Practices
+
+### 1. Start Permissive
+
+Begin with warning-only policies:
+- Monitor false positives
+- Tune patterns and thresholds
+- Gradually increase strictness
+
+### 2. Layer Policies
+
+Combine multiple policies for defense in depth:
+- Broad category policies (e.g., "No PII")
+- Specific industry policies (e.g., "HIPAA")
+- Custom org policies (e.g., "Company code of conduct")
+
+### 3. Clear Documentation
+
+Document each policy:
+- Purpose and scope
+- Affected systems
+- Exceptions process
+- Review schedule
+
+### 4. Regular Review
+
+Schedule policy reviews:
+- Quarterly effectiveness review
+- Annual comprehensive audit
+- After major incidents
+- When regulations change
+
+### 5. User Education
+
+Train users on policies:
+- Policy overview training
+- Real example scenarios
+- What to do when blocked
+- Exception request process
+
+## Need Help?
+
+- 📧 Email: policies@regpilot.dev
+- 💬 Community: [RegPilot Slack](https://regpilot.dev/slack)
+- 📚 Docs: [Governor Configuration](/guides/governor-configuration)

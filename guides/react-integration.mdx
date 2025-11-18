@@ -1,0 +1,285 @@
+---
+title: 'React Integration'
+description: 'Integrate RegPilot with React client applications'
+---
+
+# React Integration
+
+Integrate RegPilot with React client applications.
+
+## Client-Side Integration
+
+<Warning>
+Never expose API keys in client-side code! Always proxy through your backend.
+</Warning>
+
+## Custom Hook
+
+```typescript
+import { useState } from 'react';
+
+export function useRegPilot() {
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const chat = async (message: string) => {
+    setLoading(true);
+    setError(null);
+    setResponse('');
+
+    try {
+      // Call YOUR backend (which proxies to RegPilot)
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      setResponse(data.response);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { response, loading, error, chat };
+}
+```
+
+## Chat Component
+
+```typescript
+import { useState } from 'react';
+import { useRegPilot } from './hooks/useRegPilot';
+
+export function Chat() {
+  const [input, setInput] = useState('');
+  const { response, loading, error, chat } = useRegPilot();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      chat(input);
+      setInput('');
+    }
+  };
+
+  return (
+    <div className="chat-container">
+      <div className="messages">
+        {response && (
+          <div className="message assistant">
+            {response}
+          </div>
+        )}
+        {error && (
+          <div className="error">
+            Error: {error.message}
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={loading}
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Sending...' : 'Send'}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## With Streaming
+
+```typescript
+export function useStreamingChat() {
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const stream = async (message: string) => {
+    setLoading(true);
+    setResponse('');
+
+    try {
+      const res = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader!.read();
+        if (done) break;
+        
+        const text = decoder.decode(value);
+        setResponse(prev => prev + text);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { response, loading, stream };
+}
+```
+
+## Context Provider
+
+```typescript
+import { createContext, useContext, useState, ReactNode } from 'react';
+
+interface ChatContextType {
+  messages: Array<{role: string, content: string}>;
+  addMessage: (message: {role: string, content: string}) => void;
+  clearMessages: () => void;
+}
+
+const ChatContext = createContext<ChatContextType | null>(null);
+
+export function ChatProvider({ children }: { children: ReactNode }) {
+  const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
+
+  const addMessage = (message: {role: string, content: string}) => {
+    setMessages(prev => [...prev, message]);
+  };
+
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
+  return (
+    <ChatContext.Provider value={{ messages, addMessage, clearMessages }}>
+      {children}
+    </ChatContext.Provider>
+  );
+}
+
+export function useChatContext() {
+  const context = useContext(ChatContext);
+  if (!context) throw new Error('useChatContext must be used within ChatProvider');
+  return context;
+}
+```
+
+## Backend API Route (Required)
+
+```typescript
+// app/api/chat/route.ts (Next.js)
+export async function POST(request: Request) {
+  const { message } = await request.json();
+
+  const response = await fetch('https://regpilot.dev/api/ai/chat', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': process.env.REGPILOT_API_KEY!, // Server-side only!
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: message }],
+      quality: 'balanced'
+    })
+  });
+
+  const text = await response.text();
+  return Response.json({ response: text });
+}
+```
+
+## Full Example
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+
+export default function ChatApp() {
+  const [messages, setMessages] = useState<Array<{role: string, content: string}>>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function sendMessage() {
+    if (!input.trim()) return;
+
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
+      });
+
+      const data = await response.json();
+      const assistantMessage = { role: 'assistant', content: data.response };
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Chat error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
+      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`p-3 rounded-lg ${
+              msg.role === 'user'
+                ? 'bg-blue-500 text-white ml-auto'
+                : 'bg-gray-200'
+            } max-w-[80%]`}
+          >
+            {msg.content}
+          </div>
+        ))}
+        {loading && (
+          <div className="text-gray-500">AI is thinking...</div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Type a message..."
+          className="flex-1 p-2 border rounded"
+          disabled={loading}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={loading || !input.trim()}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+**Related:** [Next.js](/08-integrations/nextjs) | [Streaming](/09-guides/streaming)

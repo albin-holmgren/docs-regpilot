@@ -1,0 +1,504 @@
+---
+title: 'Self-Hosting Guide'
+description: 'Deploy and manage RegPilot on your own infrastructure'
+---
+
+# Self-Hosting RegPilot
+
+Deploy RegPilot in your own environment for maximum control and compliance.
+
+<Note>
+  Self-hosting is available on **Enterprise plans only**. Contact sales@regpilot.dev for licensing.
+</Note>
+
+## Why Self-Host?
+
+### Benefits
+
+- **Data Sovereignty** - Keep all data in your infrastructure
+- **Compliance** - Meet specific regulatory requirements
+- **Customization** - Deep integration with internal systems
+- **Air-gapped Deployment** - For secure environments
+- **Cost Control** - Predictable infrastructure costs
+
+### Requirements
+
+**Minimum Specifications:**
+- 4 CPU cores
+- 16 GB RAM
+- 100 GB SSD storage
+- PostgreSQL 14+
+- Node.js 20+
+- Docker (optional but recommended)
+
+**Recommended for Production:**
+- 8+ CPU cores
+- 32 GB+ RAM
+- 500 GB SSD storage
+- Load balancer
+- CDN for static assets
+- Backup system
+
+## Deployment Options
+
+### Option 1: Docker Compose (Quickest)
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: regpilot
+      POSTGRES_USER: regpilot
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  
+  regpilot:
+    image: regpilot/regpilot-enterprise:latest
+    environment:
+      DATABASE_URL: postgresql://regpilot:${DB_PASSWORD}@postgres:5432/regpilot
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${PUBLIC_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  postgres_data:
+```
+
+**Start the stack:**
+
+```bash
+# Set environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start services
+docker-compose up -d
+
+# Run database migrations
+docker-compose exec regpilot npm run db:migrate
+
+# Create admin user
+docker-compose exec regpilot npm run setup:admin
+```
+
+### Option 2: Kubernetes
+
+```yaml
+# regpilot-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: regpilot
+  namespace: regpilot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: regpilot
+  template:
+    metadata:
+      labels:
+        app: regpilot
+    spec:
+      containers:
+      - name: regpilot
+        image: regpilot/regpilot-enterprise:v1.0.0
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: regpilot-secrets
+              key: database-url
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: regpilot-secrets
+              key: nextauth-secret
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: regpilot-service
+  namespace: regpilot
+spec:
+  selector:
+    app: regpilot
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer
+```
+
+**Deploy to Kubernetes:**
+
+```bash
+# Create namespace
+kubectl create namespace regpilot
+
+# Create secrets
+kubectl create secret generic regpilot-secrets \
+  --from-literal=database-url="${DATABASE_URL}" \
+  --from-literal=nextauth-secret="${NEXTAUTH_SECRET}" \
+  -n regpilot
+
+# Deploy
+kubectl apply -f regpilot-deployment.yaml
+
+# Check status
+kubectl get pods -n regpilot
+```
+
+### Option 3: Manual Installation
+
+```bash
+# 1. Clone repository (requires license key)
+git clone https://github.com/regpilot/regpilot-enterprise.git
+cd regpilot-enterprise
+
+# 2. Install dependencies
+npm install
+
+# 3. Set up environment
+cp .env.example .env
+# Edit .env with your configuration
+
+# 4. Set up database
+createdb regpilot
+npm run db:migrate
+npm run db:seed
+
+# 5. Build application
+npm run build
+
+# 6. Start production server
+npm run start
+
+# Or use PM2 for process management
+npm install -g pm2
+pm2 start npm --name "regpilot" -- start
+pm2 save
+pm2 startup
+```
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# Application
+NODE_ENV=production
+PORT=3000
+PUBLIC_URL=https://regpilot.yourcompany.com
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/regpilot
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+
+# Authentication
+NEXTAUTH_SECRET=your-secure-secret-key-here
+NEXTAUTH_URL=$PUBLIC_URL
+SESSION_TIMEOUT=7d
+
+# AI Providers (at least one required)
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_API_KEY=...
+
+# Redis (optional but recommended)
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=
+
+# Email (for notifications)
+SMTP_HOST=smtp.yourcompany.com
+SMTP_PORT=587
+SMTP_USER=noreply@yourcompany.com
+SMTP_PASSWORD=
+SMTP_FROM=RegPilot <noreply@yourcompany.com>
+
+# Storage
+STORAGE_TYPE=local # or 's3', 'azure', 'gcs'
+STORAGE_PATH=/var/lib/regpilot/data
+
+# S3 Configuration (if using S3)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+AWS_BUCKET=regpilot-data
+
+# Monitoring
+SENTRY_DSN= # optional
+LOG_LEVEL=info
+```
+
+### Database Setup
+
+**PostgreSQL with RLS:**
+
+```sql
+-- Create database
+CREATE DATABASE regpilot;
+
+-- Create user
+CREATE USER regpilot WITH PASSWORD 'secure_password';
+
+-- Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE regpilot TO regpilot;
+
+-- Connect to database
+\c regpilot
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Run migrations (via application)
+-- npm run db:migrate
+```
+
+### Reverse Proxy (Nginx)
+
+```nginx
+# /etc/nginx/sites-available/regpilot
+upstream regpilot {
+    server localhost:3000;
+    keepalive 64;
+}
+
+server {
+    listen 80;
+    server_name regpilot.yourcompany.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name regpilot.yourcompany.com;
+
+    ssl_certificate /etc/ssl/certs/regpilot.crt;
+    ssl_certificate_key /etc/ssl/private/regpilot.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://regpilot;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+## Backup & Recovery
+
+### Database Backup
+
+```bash
+# Automated daily backup script
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/var/backups/regpilot"
+DB_NAME="regpilot"
+
+# Create backup
+pg_dump $DB_NAME | gzip > "$BACKUP_DIR/regpilot_$DATE.sql.gz"
+
+# Keep only last 30 days
+find $BACKUP_DIR -name "regpilot_*.sql.gz" -mtime +30 -delete
+
+# Upload to S3 (optional)
+aws s3 cp "$BACKUP_DIR/regpilot_$DATE.sql.gz" s3://your-backup-bucket/
+```
+
+### Restore from Backup
+
+```bash
+# Restore database
+gunzip < regpilot_20251118.sql.gz | psql regpilot
+
+# Or from S3
+aws s3 cp s3://your-backup-bucket/regpilot_20251118.sql.gz - | gunzip | psql regpilot
+```
+
+## Monitoring
+
+### Health Checks
+
+```bash
+# Application health
+curl https://regpilot.yourcompany.com/api/health
+
+# Database connectivity
+curl https://regpilot.yourcompany.com/api/health/db
+
+# AI providers status
+curl https://regpilot.yourcompany.com/api/health/providers
+```
+
+### Prometheus Metrics
+
+RegPilot exposes Prometheus metrics at `/metrics`:
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'regpilot'
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: '/metrics'
+```
+
+### Key Metrics to Monitor
+
+- `regpilot_requests_total` - Total API requests
+- `regpilot_request_duration_seconds` - Request latency
+- `regpilot_ai_calls_total` - AI provider calls
+- `regpilot_governor_violations_total` - Compliance violations
+- `regpilot_db_connections` - Database connection pool
+- `regpilot_cache_hit_ratio` - Cache effectiveness
+
+## Security
+
+### SSL/TLS Configuration
+
+```bash
+# Generate self-signed certificate (development only)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/regpilot.key \
+  -out /etc/ssl/certs/regpilot.crt
+
+# Use Let's Encrypt for production
+certbot --nginx -d regpilot.yourcompany.com
+```
+
+### Firewall Rules
+
+```bash
+# Allow only necessary ports
+ufw allow 22/tcp    # SSH
+ufw allow 80/tcp    # HTTP
+ufw allow 443/tcp   # HTTPS
+ufw enable
+```
+
+### Security Headers
+
+Add to Nginx configuration:
+
+```nginx
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline';" always;
+```
+
+## Updates & Maintenance
+
+### Update Process
+
+```bash
+# 1. Backup database
+./scripts/backup.sh
+
+# 2. Pull latest version
+docker pull regpilot/regpilot-enterprise:latest
+
+# 3. Stop current version
+docker-compose down
+
+# 4. Start new version
+docker-compose up -d
+
+# 5. Run migrations
+docker-compose exec regpilot npm run db:migrate
+
+# 6. Verify
+curl https://regpilot.yourcompany.com/api/health
+```
+
+### Zero-Downtime Updates (Kubernetes)
+
+```bash
+# Rolling update
+kubectl set image deployment/regpilot \
+  regpilot=regpilot/regpilot-enterprise:v1.1.0 \
+  -n regpilot
+
+# Monitor rollout
+kubectl rollout status deployment/regpilot -n regpilot
+
+# Rollback if needed
+kubectl rollout undo deployment/regpilot -n regpilot
+```
+
+## Support
+
+### Enterprise Support
+
+- **Email:** enterprise@regpilot.dev
+- **SLA:** 24/7 support with <2 hour response time
+- **Slack:** Dedicated private channel
+- **Phone:** Available on request
+
+### Documentation
+
+- [Architecture Overview](/architecture/overview)
+- [Security Best Practices](/guides/security-best-practices)
+- [Troubleshooting](/troubleshooting)
+
+---
+
+<Note>
+  Self-hosting requires an Enterprise license. Contact **sales@regpilot.dev** for pricing and licensing information.
+</Note>

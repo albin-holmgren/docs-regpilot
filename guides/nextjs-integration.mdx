@@ -1,0 +1,220 @@
+---
+title: 'Next.js Integration'
+description: 'Integrate RegPilot with Next.js applications'
+---
+
+# Next.js Integration
+
+Integrate RegPilot with Next.js applications (App Router & Pages Router).
+
+## App Router (Recommended)
+
+### API Route
+
+Create `/app/api/chat/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(request: NextRequest) {
+  const { message } = await request.json();
+
+  const response = await fetch('https://regpilot.dev/api/ai/chat', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': process.env.REGPILOT_API_KEY!,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: message }],
+      quality: 'balanced'
+    })
+  });
+
+  // Stream response directly to client
+  return new NextResponse(response.body, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    }
+  });
+}
+```
+
+### Client Component
+
+```typescript
+'use client';
+
+import { useState } from 'react';
+
+export default function Chat() {
+  const [messages, setMessages] = useState<string[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function sendMessage() {
+    if (!input.trim()) return;
+
+    setLoading(true);
+    setMessages([...messages, `User: ${input}`]);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
+      });
+
+      const text = await response.text();
+      setMessages((prev) => [...prev, `AI: ${text}`]);
+      setInput('');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="p-4">
+      <div className="space-y-2 mb-4">
+        {messages.map((msg, i) => (
+          <div key={i} className="p-2 bg-gray-100 rounded">
+            {msg}
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          className="flex-1 p-2 border rounded"
+          disabled={loading}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={loading}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+        >
+          {loading ? 'Sending...' : 'Send'}
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Server Component with Streaming
+
+```typescript
+// app/chat/page.tsx
+import { Suspense } from 'react';
+
+async function ChatResponse({ message }: { message: string }) {
+  const response = await fetch('https://regpilot.dev/api/ai/chat', {
+    method: 'POST',
+    headers: {
+      'X-API-Key': process.env.REGPILOT_API_KEY!,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: message }],
+      quality: 'balanced'
+    }),
+    cache: 'no-store'
+  });
+
+  const text = await response.text();
+  return <div>{text}</div>;
+}
+
+export default function Page({ searchParams }: { searchParams: { q: string } }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatResponse message={searchParams.q || 'Hello'} />
+    </Suspense>
+  );
+}
+```
+
+## Pages Router
+
+### API Route
+
+Create `/pages/api/chat.ts`:
+
+```typescript
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { message } = req.body;
+
+  try {
+    const response = await fetch('https://regpilot.dev/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': process.env.REGPILOT_API_KEY!,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: message }],
+        quality: 'balanced'
+      })
+    });
+
+    const text = await response.text();
+    res.status(200).json({ response: text });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+}
+```
+
+## Environment Variables
+
+```bash
+# .env.local
+REGPILOT_API_KEY=sk_your_api_key_here
+```
+
+## Deployment
+
+### Vercel
+
+```bash
+# Add environment variable
+vercel env add REGPILOT_API_KEY
+
+# Deploy
+vercel --prod
+```
+
+### Environment Config
+
+```typescript
+// next.config.js
+module.exports = {
+  env: {
+    // Public variables only - don't expose API key!
+    NEXT_PUBLIC_APP_NAME: 'My App'
+  }
+};
+```
+
+## Best Practices
+
+1. **Never expose API key in client-side code**
+2. **Use API routes** to proxy requests
+3. **Implement rate limiting** on your API routes
+4. **Cache responses** when appropriate
+5. **Handle errors** gracefully
+
+---
+
+**Related:** [Express](/08-integrations/express) | [React](/08-integrations/react)
